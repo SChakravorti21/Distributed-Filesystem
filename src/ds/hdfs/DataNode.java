@@ -109,13 +109,12 @@ public class DataNode implements IDataNode
     {
         while(true)
         {
-            try
-            {
+            try {
                 Registry registry = LocateRegistry.getRegistry(IP, Port);
                 INameNode stub = (INameNode) registry.lookup(Name);
                 System.out.println("NameNode Found!");
                 return stub;
-            }catch(Exception e){
+            } catch(Exception e) {
                 System.out.println("NameNode still not Found");
                 continue;
             }

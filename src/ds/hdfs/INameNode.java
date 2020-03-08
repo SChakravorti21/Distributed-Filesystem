@@ -22,9 +22,6 @@ public interface INameNode extends Remote{
 		Datanode <-> Namenode interaction methods
 	*/
 	
-	/* Get the status for blocks */
-	byte[] blockReport(byte[] inp ) throws RemoteException;
-	
 	/* Heartbeat messages between NameNode and DataNode */
 	byte[] heartBeat(byte[] inp ) throws RemoteException;
 }

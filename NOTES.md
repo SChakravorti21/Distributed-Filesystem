@@ -74,3 +74,5 @@
   - req, repeated: filenames
 - Heartbeat.proto (DataNode -> NameNode, can make return type `void` on `INameNode`)
   - req: DataNode, req: map { filename : [ block numbers ] }
+- BlockReportRespone (request is empty)
+  - req: map { filename : [ block numbers ] }
