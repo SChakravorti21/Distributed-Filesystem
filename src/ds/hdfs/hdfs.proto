@@ -1,5 +1,91 @@
 package hdfs;
 
 option java_package = "ds.hdfs";
-option java_outer_classname = "SOMETHING";
+option java_outer_classname = "Operations";
 
+enum StatusCode {
+    OK      = 1;
+    E_UNKWN = 2;    // Unknown error
+    E_NOENT = 3;    // File does not exist
+    E_NOBLK = 4;    // Block does not exist
+    E_EXIST = 5;    // File already exists
+    E_IO    = 6;    // I/O Error
+    E_INVAL = 7;    // Invalid arguments
+}
+
+enum FileMode {
+    READ  = 1;
+    WRITE = 2;
+}
+
+message DataNode {
+    required int32 id   = 1;
+    required string ip  = 2;
+    required int32 port = 3;
+}
+
+message ReadWriteRequest {
+    required string filename   = 1;
+    required int64 blockNumber = 2;
+    // Contents only included in `write` requests
+    optional bytes contents    = 3;
+}
+
+message ReadWriteResponse {
+    required StatusCode status = 1;
+    // Contents only included in `read` responses
+    optional bytes contents    = 2;
+}
+
+message OpenCloseRequest {
+    required string filename = 1;
+    required FileMode mode   = 2;
+}
+
+message OpenCloseResponse {
+    required StatusCode status = 1;
+}
+
+message AssignBlockRequest {
+    required string filename = 1;
+    required int64 blockNumber = 2;
+}
+
+message AssignBlockResponse {
+    // The DataNodes that the client can
+    // request to store the block's contents
+    repeated DataNode nodes = 1;
+}
+
+message GetBlockLocationsRequest {
+    required string filename = 1;
+}
+
+message GetBlockLocationsResponse {
+    message BlockLocations {
+        required int64 blockNumber = 1;
+        repeated DataNode nodes = 2;
+    }
+    
+    // Every block along with every DataNode
+    // it is known to be stored on
+    repeated BlockLocations blocks = 1;
+}
+
+message ListResponse {
+    repeated string filenames = 1;
+}
+
+message FileBlocks {
+    required string filename = 1;
+    repeated int64 fileBlocks = 2;
+}
+
+message Heartbeat {
+    required DataNode node = 1;
+    repeated FileBlocks availableFileBlocks = 2;
+}
+
+message BlockReportResponse {
+    repeated FileBlocks availableFileBlocks = 1;
+}
