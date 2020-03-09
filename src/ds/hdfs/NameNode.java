@@ -1,184 +1,235 @@
 package ds.hdfs;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.net.UnknownHostException;
-import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.*;
 
-import ds.hdfs.hdfsformat.*;
+import javax.xml.crypto.Data;
+import java.io.IOException;
+import java.rmi.RemoteException;
+import java.rmi.registry.Registry;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
-public class NameNode implements INameNode{
+public class NameNode implements INameNode {
 
-	protected Registry serverRegistry;
-	
-	public NameNode(String addr,int p, String nn)
-	{
-		ip = addr;
-		port = p;
-		name = nn;
-	}
-	
-	public static class DataNode
-	{
-		String ip;
-		int port;
-		String serverName;
-		public DataNode(String addr,int p,String sname)
-		{
-			ip = addr;
-			port = p;
-			serverName = sname;
-		}
-	}
-	
-	public static class FileInfo
-	{
-		String filename;
-		int filehandle;
-		boolean writemode;
-		ArrayList<Integer> Chunks;
-		public FileInfo(String name, int handle, boolean option)
-		{
-			filename = name;
-			filehandle = handle;
-			writemode = option;
-			Chunks = new ArrayList<Integer>();
-		}
-	}
-	/* Method to open a file given file name with read-write flag*/
-	
-	boolean findInFilelist(int fhandle)
-	{
-	}
-	
-	public void printFilelist()
-	{
-	}
-	
-	public byte[] openFile(byte[] inp) throws RemoteException
-	{
-		try
-		{
-		}
-		catch (Exception e) 
-		{
-			System.err.println("Error at " + this.getClass() + e.toString());
-			e.printStackTrace();
-			response.setStatus(-1);
-		}
-		return response.toByteArray();
-	}
-	
-	public byte[] closeFile(byte[] inp ) throws RemoteException
-	{
-		try
-		{
-		}
-		catch(Exception e)
-		{
-			System.err.println("Error at closefileRequest " + e.toString());
-			e.printStackTrace();
-			response.setStatus(-1);
-		}
-		
-		return response.build().toByteArray();
-	}
-	
-	public byte[] getBlockLocations(byte[] inp ) throws RemoteException
-	{
-		try
-		{
-		}
-		catch(Exception e)
-		{
-			System.err.println("Error at getBlockLocations "+ e.toString());
-			e.printStackTrace();
-			response.setStatus(-1);
-		}		
-		return response.build().toByteArray();
-	}
-	
-	
-	public byte[] assignBlock(byte[] inp ) throws RemoteException
-	{
-		try
-		{
-		}
-		catch(Exception e)
-		{
-			System.err.println("Error at AssignBlock "+ e.toString());
-			e.printStackTrace();
-			response.setStatus(-1);
-		}
-		
-		return response.build().toByteArray();
-	}
-		
-	
-	public byte[] list(byte[] inp ) throws RemoteException
-	{
-		try
-		{
-		}catch(Exception e)
-		{
-			System.err.println("Error at list "+ e.toString());
-			e.printStackTrace();
-			response.setStatus(-1);
-		}
-		return response.build().toByteArray();
-	}
-	
-	// Datanode <-> Namenode interaction methods
-		
-	public byte[] blockReport(byte[] inp ) throws RemoteException
-	{
-		try
-		{
-		}
-		catch(Exception e)
-		{
-			System.err.println("Error at blockReport "+ e.toString());
-			e.printStackTrace();
-			response.addStatus(-1);
-		}
-		return response.build().toByteArray();
-	}
-	
-	
-	
-	public byte[] heartBeat(byte[] inp ) throws RemoteException
-	{
-		return response.build().toByteArray();
-	}
-	
-	public void printMsg(String msg)
-	{
-		System.out.println(msg);		
-	}
-	
-	public static void main(String[] args) throws InterruptedException, NumberFormatException, IOException
-	{
-	}
-	
+    // H: Times are always in milliseconds
+    // Scan for dead DataNodes every second
+    private static final long SCAN_INTERVAL = 1000;
+    // How old a heartbeat has to be for the DataNode
+    // to be considered dead
+    private static final long HEARTBEAT_THRESHOLD = 1000;
+
+    // NameNode's properties and locks
+    private String ipAddress;
+    private int portNumber;
+    private String identifier;
+    private static final Object nodeLock = new Object();
+    private static final Object fileLock = new Object();
+
+    // Tracking active DataNodes and their properties
+    private Timer timer = new Timer();
+    private Map<Integer, DataNode> activeNodes = new HashMap<>();
+
+    // Tracking file information, such what files are available,
+    // whether they're being written to, and which nodes store chunks
+    private Map<String, FileStatus> fileStatuses = new HashMap<>();
+    private Set<DataNodeBlockInfo> blockInfoList = new HashSet<>();
+
+    // We use the registry to contact DataNodes?
+    protected Registry serverRegistry;
+
+    public NameNode(String ipAddress, int portNumber, String name) {
+        this.ipAddress = ipAddress;
+        this.portNumber = portNumber;
+        this.identifier = name;
+
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                long currentTime = System.currentTimeMillis();
+
+                synchronized (nodeLock) {
+                    activeNodes = activeNodes.keySet()
+                            .stream()
+                            .parallel()
+                            .filter(id -> currentTime - activeNodes.get(id).lastHeartbeat < HEARTBEAT_THRESHOLD)
+                            .collect(Collectors.toConcurrentMap(
+                                    Function.identity(),  // name itself is the key
+                                    activeNodes::get
+                            ));
+                }
+            }
+        }, SCAN_INTERVAL, SCAN_INTERVAL);
+    }
+
+    public static void main(String[] args)
+            throws InterruptedException, NumberFormatException, IOException {
+
+    }
+
+    public byte[] openFile(byte[] req) throws RemoteException {
+        Operations.OpenCloseRequest request;
+        Operations.StatusCode status = Operations.StatusCode.OK;
+
+        try {
+            request = Operations.OpenCloseRequest.parseFrom(req);
+        } catch (InvalidProtocolBufferException e) {
+            e.printStackTrace();
+            return createOpenCloseResponse(Operations.StatusCode.E_UNKWN);
+        }
+
+        synchronized (fileLock) {
+            String filename = request.getFilename();
+            Operations.FileMode requestedMode = request.getMode();
+            FileStatus fileStatus = fileStatuses.getOrDefault(filename, null);
+
+            if (fileStatus == null) {
+                // If the file doesn't exist, it can't be opened
+                status = Operations.StatusCode.E_NOENT;
+            } else if (fileStatus.openMode == Operations.FileMode.WRITE) {
+                // If ANYONE is writing to the file, no one can read
+                // or write to it
+                status = Operations.StatusCode.E_BUSY;
+            } else if (requestedMode == Operations.FileMode.WRITE
+                    && fileStatus.openMode == Operations.FileMode.READ) {
+                // If people are reading the file but someone
+                // requests to write to it, that would cause reading
+                // corrupted/stale data
+                status = Operations.StatusCode.E_BUSY;
+            } else {
+                fileStatus.openMode = requestedMode;
+                fileStatus.openHandles++;
+            }
+        }
+
+        return createOpenCloseResponse(status);
+    }
+
+    public byte[] closeFile(byte[] req) throws RemoteException {
+        Operations.OpenCloseRequest request;
+        Operations.StatusCode status = Operations.StatusCode.OK;
+
+        try {
+            request = Operations.OpenCloseRequest.parseFrom(req);
+        } catch (InvalidProtocolBufferException e) {
+            e.printStackTrace();
+            return createOpenCloseResponse(Operations.StatusCode.E_UNKWN);
+        }
+
+        synchronized (fileLock) {
+            String filename = request.getFilename();
+            Operations.FileMode requestedMode = request.getMode();
+            FileStatus fileStatus = fileStatuses.getOrDefault(filename, null);
+
+            if (fileStatus == null || fileStatus.openMode != requestedMode) {
+                // Invalid argument to close non-existent file
+                // or close with incorrect mode
+                status = Operations.StatusCode.E_INVAL;
+            } else {
+                // Decrement number of nodes accessing file.
+                // If it reaches 0, clear mode so that it doesn't
+                // seem like the file is being read/written to.
+                if (--fileStatus.openHandles == 0) {
+                    fileStatus.openMode = null;
+                }
+            }
+        }
+
+        return createOpenCloseResponse(status);
+    }
+
+    public byte[] getBlockLocations(byte[] inp) throws RemoteException {
+        return null;
+    }
+
+
+    public byte[] assignBlock(byte[] inp) throws RemoteException {
+        return null;
+    }
+
+
+    public byte[] list(byte[] inp) throws RemoteException {
+        synchronized (fileLock) {
+            return Operations.ListResponse
+                    .newBuilder()
+                    .addAllFilenames(fileStatuses.keySet())
+                    .build()
+                    .toByteArray();
+        }
+    }
+
+    // Datanode <-> Namenode interaction methods
+
+    public byte[] blockReport(byte[] inp) throws RemoteException {
+        return null;
+    }
+
+
+    public void heartBeat(byte[] req) throws RemoteException {
+        Operations.Heartbeat heartbeat;
+
+        try {
+            heartbeat = Operations.Heartbeat.parseFrom(req);
+        } catch (InvalidProtocolBufferException ex) {
+            ex.printStackTrace();
+            return;
+        }
+
+        synchronized (nodeLock) {
+            int nodeId = heartbeat.getNode().getId();
+
+            if(!activeNodes.containsKey(nodeId)) {
+                activeNodes.put(nodeId, new DataNode(heartbeat.getNode()));
+            }
+
+            DataNode node = activeNodes.get(nodeId);
+        }
+    }
+
+    private static byte[] createOpenCloseResponse(Operations.StatusCode status) {
+        return Operations.OpenCloseResponse
+                .newBuilder()
+                .setStatus(status)
+                .build()
+                .toByteArray();
+    }
+
+    public static class DataNode {
+        String ip;
+        int port;
+        int id;
+        long lastHeartbeat;
+
+        public DataNode(String addr, int p, int id) {
+            this.ip = addr;
+            this.port = p;
+            this.id = id;
+            this.lastHeartbeat = System.currentTimeMillis();
+        }
+
+        public DataNode(Operations.DataNode self) {
+            this.ip = self.getIp();
+            this.port = self.getPort();
+            this.id = self.getId();
+            this.lastHeartbeat = System.currentTimeMillis();
+        }
+    }
+
+    public static class DataNodeBlockInfo {
+        String filename;
+        int blockNumber;
+        String nodeName;
+
+        public DataNodeBlockInfo(String filename, int blockNumber, String nodeName) {
+            this.filename = filename;
+            this.blockNumber = blockNumber;
+            this.nodeName = nodeName;
+        }
+    }
+
+    public static class FileStatus {
+        Operations.FileMode openMode = null;
+        int openHandles = 0;
+    }
+
 }

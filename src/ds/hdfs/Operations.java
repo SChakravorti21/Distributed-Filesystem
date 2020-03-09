@@ -71,6 +71,14 @@ public final class Operations {
      * <code>E_INVAL = 7;</code>
      */
     E_INVAL(7),
+    /**
+     * <pre>
+     * File is being written to
+     * </pre>
+     *
+     * <code>E_BUSY = 8;</code>
+     */
+    E_BUSY(8),
     ;
 
     /**
@@ -125,6 +133,14 @@ public final class Operations {
      * <code>E_INVAL = 7;</code>
      */
     public static final int E_INVAL_VALUE = 7;
+    /**
+     * <pre>
+     * File is being written to
+     * </pre>
+     *
+     * <code>E_BUSY = 8;</code>
+     */
+    public static final int E_BUSY_VALUE = 8;
 
 
     public final int getNumber() {
@@ -154,6 +170,7 @@ public final class Operations {
         case 5: return E_EXIST;
         case 6: return E_IO;
         case 7: return E_INVAL;
+        case 8: return E_BUSY;
         default: return null;
       }
     }
@@ -11350,11 +11367,11 @@ public final class Operations {
       "rtbeat\022\034\n\004node\030\001 \002(\0132\016.hdfs.DataNode\022-\n\023" +
       "availableFileBlocks\030\002 \003(\0132\020.hdfs.FileBlo" +
       "cks\"D\n\023BlockReportResponse\022-\n\023availableF" +
-      "ileBlocks\030\001 \003(\0132\020.hdfs.FileBlocks*_\n\nSta" +
+      "ileBlocks\030\001 \003(\0132\020.hdfs.FileBlocks*k\n\nSta" +
       "tusCode\022\006\n\002OK\020\001\022\013\n\007E_UNKWN\020\002\022\013\n\007E_NOENT\020" +
       "\003\022\013\n\007E_NOBLK\020\004\022\013\n\007E_EXIST\020\005\022\010\n\004E_IO\020\006\022\013\n" +
-      "\007E_INVAL\020\007*\037\n\010FileMode\022\010\n\004READ\020\001\022\t\n\005WRIT" +
-      "E\020\002B\025\n\007ds.hdfsB\nOperations"
+      "\007E_INVAL\020\007\022\n\n\006E_BUSY\020\010*\037\n\010FileMode\022\010\n\004RE" +
+      "AD\020\001\022\t\n\005WRITE\020\002B\025\n\007ds.hdfsB\nOperations"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,

@@ -12,6 +12,7 @@ enum StatusCode {
     E_EXIST = 5;    // File already exists
     E_IO    = 6;    // I/O Error
     E_INVAL = 7;    // Invalid arguments
+    E_BUSY  = 8;    // File is being written to
 }
 
 enum FileMode {
