@@ -2,7 +2,6 @@ package ds.hdfs;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
-import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
@@ -51,8 +50,7 @@ public class NameNode implements INameNode {
                 synchronized (nodeLock) {
                     activeNodes = activeNodes.keySet()
                             .stream()
-                            .parallel()
-                            .filter(id -> currentTime - activeNodes.get(id).lastHeartbeat < HEARTBEAT_THRESHOLD)
+                            .filter(id -> currentTime - activeNodes.get(id).latestHeartbeat < HEARTBEAT_THRESHOLD)
                             .collect(Collectors.toConcurrentMap(
                                     Function.identity(),  // name itself is the key
                                     activeNodes::get
@@ -178,11 +176,34 @@ public class NameNode implements INameNode {
         synchronized (nodeLock) {
             int nodeId = heartbeat.getNode().getId();
 
+            // If we don't have info on the node,
+            // start storing info on it
             if(!activeNodes.containsKey(nodeId)) {
                 activeNodes.put(nodeId, new DataNode(heartbeat.getNode()));
             }
 
+            // Update most recent heartbeat time
             DataNode node = activeNodes.get(nodeId);
+            node.latestHeartbeat = System.currentTimeMillis();
+
+            synchronized (fileLock) {
+                // Map all the DataNode's blocks to a flat list
+                // so that we can take the union of it with the
+                // existing block info stored on NameNode.
+                List<DataNodeBlockInfo> nodeBlockInfoList =
+                        heartbeat.getAvailableFileBlocksList()
+                            .stream()
+                            .flatMap(fileBlocks -> fileBlocks.getFileBlocksList()
+                                    .stream()
+                                    .map(blockNumber -> new DataNodeBlockInfo(
+                                            fileBlocks.getFilename(),
+                                            blockNumber,
+                                            new DataNode(heartbeat.getNode())
+                                    )))
+                            .collect(Collectors.toList());
+
+                blockInfoList.addAll(nodeBlockInfoList);
+            }
         }
     }
 
@@ -198,32 +219,61 @@ public class NameNode implements INameNode {
         String ip;
         int port;
         int id;
-        long lastHeartbeat;
+        long latestHeartbeat;
 
         public DataNode(String addr, int p, int id) {
             this.ip = addr;
             this.port = p;
             this.id = id;
-            this.lastHeartbeat = System.currentTimeMillis();
+            this.latestHeartbeat = System.currentTimeMillis();
         }
 
         public DataNode(Operations.DataNode self) {
             this.ip = self.getIp();
             this.port = self.getPort();
             this.id = self.getId();
-            this.lastHeartbeat = System.currentTimeMillis();
+            this.latestHeartbeat = System.currentTimeMillis();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return obj instanceof DataNode && this.id == ((DataNode) obj).id;
         }
     }
 
+    /**
+     * [
+     *   [File 1, Block 1, Node 1],
+     *   [File 1, Block 1, Node 2],
+     *   [File 1, Block 2, Node 2],
+     *   [File 1, Block 2, Node 3],
+     * ]
+     */
     public static class DataNodeBlockInfo {
         String filename;
-        int blockNumber;
-        String nodeName;
+        long blockNumber;
+        DataNode node;
 
-        public DataNodeBlockInfo(String filename, int blockNumber, String nodeName) {
+        DataNodeBlockInfo(String filename, long blockNumber, DataNode node) {
             this.filename = filename;
             this.blockNumber = blockNumber;
-            this.nodeName = nodeName;
+            this.node = node;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if(! (obj instanceof DataNodeBlockInfo))
+                return false;
+
+            DataNodeBlockInfo other = (DataNodeBlockInfo) obj;
+            return this.filename.equals(other.filename)
+                    && this.blockNumber == other.blockNumber
+                    && this.node.equals(other.node);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.filename, this.blockNumber, this.node);
         }
     }
 
