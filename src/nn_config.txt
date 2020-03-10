@@ -1,2 +1,4 @@
-#contains namenode details Name; IP; port
-NN;192.168.12.75;2004
+DESCRIPTION=NN
+IP=192.168.12.75
+PORT=2004
+REPLICATION_FACTOR=2
