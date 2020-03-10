@@ -54,9 +54,10 @@ message AssignBlockRequest {
 }
 
 message AssignBlockResponse {
+    required StatusCode status = 1;
     // The DataNodes that the client can
     // request to store the block's contents
-    repeated DataNode nodes = 1;
+    repeated DataNode nodes = 2;
 }
 
 message GetBlockLocationsRequest {
@@ -68,14 +69,16 @@ message GetBlockLocationsResponse {
         required int64 blockNumber = 1;
         repeated DataNode nodes = 2;
     }
-    
+
+    required StatusCode status = 1;
     // Every block along with every DataNode
     // it is known to be stored on
-    repeated BlockLocations blocks = 1;
+    repeated BlockLocations blocks = 2;
 }
 
 message ListResponse {
-    repeated string filenames = 1;
+    required StatusCode status = 1;
+    repeated string filenames = 2;
 }
 
 message FileBlocks {
@@ -89,5 +92,6 @@ message Heartbeat {
 }
 
 message BlockReportResponse {
-    repeated FileBlocks availableFileBlocks = 1;
+    required StatusCode status = 1;
+    repeated FileBlocks availableFileBlocks = 2;
 }

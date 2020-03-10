@@ -136,7 +136,15 @@ public class NameNode implements INameNode {
         return createOpenCloseResponse(status);
     }
 
-    public byte[] getBlockLocations(byte[] inp) throws RemoteException {
+    public byte[] getBlockLocations(byte[] req) throws RemoteException {
+        Operations.GetBlockLocationsRequest request;
+
+        try {
+            request = Operations.GetBlockLocationsRequest.parseFrom(req);
+        } catch (InvalidProtocolBufferException ex) {
+            ex.printStackTrace();
+        }
+
         return null;
     }
 
