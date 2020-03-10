@@ -8,8 +8,7 @@ import java.rmi.registry.Registry;
 import java.rmi.RemoteException;
 import java.util.*;
 import java.io.*;
-import ds.hdfs.hdfsformat.*;
-import com.google.protobuf.ByteString; 
+import com.google.protobuf.ByteString;
 //import ds.hdfs.INameNode;
 
 public class Client
@@ -56,12 +55,12 @@ public class Client
     {
         System.out.println("Going to put file" + Filename);
         BufferedInputStream bis;
-        try{
-            bis = new BufferedInputStream(new FileInputStream(File));
-        }catch(Exception e){
-            System.out.println("File not found !!!");
-            return;
-        }
+//        try{
+//            bis = new BufferedInputStream(new FileInputStream(File));
+//        }catch(Exception e){
+//            System.out.println("File not found !!!");
+//            return;
+//        }
     }
 
     public void GetFile(String FileName)
