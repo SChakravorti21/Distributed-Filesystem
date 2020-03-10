@@ -3,8 +3,13 @@ package ds.hdfs;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -15,16 +20,20 @@ public class NameNode implements INameNode {
     // H: Times are always in milliseconds
     // Scan for dead DataNodes every second
     private static final long SCAN_INTERVAL = 1000;
+
     // How old a heartbeat has to be for the DataNode
     // to be considered dead
     private static final long HEARTBEAT_THRESHOLD = 1000;
-    // How many DataNodes a chunk should be replicated on
-    private static final int REPLICATION_FACTOR = 3;
+
+    // We use the registry to contact DataNodes?
+    public static final int REGISTRY_PORT = 1099;
 
     // NameNode's properties and locks
     private String ipAddress;
     private int portNumber;
     private String identifier;
+    private int replicationFactor;    // How many DataNodes a chunk should be replicated on
+
     private static final Object nodeLock = new Object();
     private static final Object fileLock = new Object();
 
@@ -37,18 +46,17 @@ public class NameNode implements INameNode {
     private Map<String, FileStatus> fileStatuses = new HashMap<>();
     private Set<DataNodeBlockInfo> blockInfoList = new HashSet<>();
 
-    // We use the registry to contact DataNodes?
-    protected Registry serverRegistry;
-
-    public NameNode(String ipAddress, int portNumber, String name) {
+    public NameNode(String ipAddress, int portNumber, String name, int replicationFactor) {
         this.ipAddress = ipAddress;
         this.portNumber = portNumber;
         this.identifier = name;
+        this.replicationFactor = replicationFactor;
 
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
                 long currentTime = System.currentTimeMillis();
+                System.out.println(currentTime);
 
                 synchronized (nodeLock) {
                     activeNodes = activeNodes.keySet()
@@ -63,9 +71,38 @@ public class NameNode implements INameNode {
         }, SCAN_INTERVAL, SCAN_INTERVAL);
     }
 
-    public static void main(String[] args)
-            throws InterruptedException, NumberFormatException, IOException {
+    public static void main(String[] args) {
+        try {
+            // Get NameNode's configuration
+            Map<String, String> config = Files.lines(Paths.get("src/nn_config.txt"))
+                    .map(line -> line.split("="))
+                    .collect(Collectors.toMap(
+                            line -> line[0],
+                            line -> line[1]
+                    ));
 
+            String description = config.get("DESCRIPTION");
+            String ip = config.get("IP");
+            int port = Integer.parseInt(config.get("PORT"));
+            int replicationFactor = Integer.parseInt(config.get("REPLICATION_FACTOR"));
+
+            NameNode nameNode = new NameNode(ip, port, description, replicationFactor);
+            INameNode skeleton = (INameNode) UnicastRemoteObject.exportObject(nameNode, port);
+
+            // Bind remote object's stub in registry
+            Registry serverRegistry = LocateRegistry.createRegistry(REGISTRY_PORT);
+            serverRegistry.bind("INameNode", skeleton);
+            System.out.println(String.format("NameNode ready! (IP %s, PORT %d)", ip, port));
+        } catch (AlreadyBoundException e) {
+            e.printStackTrace();
+            System.err.println("NameNode already bound to port, check that NameNode is not already running.");
+        } catch (RemoteException e) {
+            e.printStackTrace();
+            System.err.println("Error instantiating server skeleton");
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println("Failed to read config file, check that src/nn_config.txt exists");
+        }
     }
 
     public byte[] openFile(byte[] req) throws RemoteException {
@@ -187,7 +224,7 @@ public class NameNode implements INameNode {
             Collections.shuffle(nodes);
 
             List<Operations.DataNode> assignedNodes = nodes
-                    .subList(0, REPLICATION_FACTOR)
+                    .subList(0, replicationFactor)
                     .stream()
                     .map(NameNode::convertDataNodeToProto)
                     .collect(Collectors.toList());
