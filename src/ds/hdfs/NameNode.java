@@ -8,6 +8,7 @@ import java.rmi.registry.Registry;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class NameNode implements INameNode {
 
@@ -17,6 +18,8 @@ public class NameNode implements INameNode {
     // How old a heartbeat has to be for the DataNode
     // to be considered dead
     private static final long HEARTBEAT_THRESHOLD = 1000;
+    // How many DataNodes a chunk should be replicated on
+    private static final int REPLICATION_FACTOR = 3;
 
     // NameNode's properties and locks
     private String ipAddress;
@@ -143,14 +146,59 @@ public class NameNode implements INameNode {
             request = Operations.GetBlockLocationsRequest.parseFrom(req);
         } catch (InvalidProtocolBufferException ex) {
             ex.printStackTrace();
+            return createGetBlockLocationsResponse(Operations.StatusCode.E_UNKWN);
         }
 
-        return null;
+        synchronized (nodeLock) {
+            synchronized (fileLock) {
+                // First check if there are any nodes at all storing
+                // this block
+                Stream<DataNodeBlockInfo> filteredBlockInfoList = blockInfoList
+                        .stream()
+                        .filter(blockInfo -> blockInfo.filename.equals(request.getFilename())
+                                && blockInfo.blockNumber == request.getBlockNumber());
+
+                // If no such nodes are found, we won't be able to
+                // tell the client which DataNodes to contact anyways
+                if (filteredBlockInfoList.count() == 0) {
+                    return createGetBlockLocationsResponse(Operations.StatusCode.E_NOBLK);
+                }
+
+                // For the client's convenience, also filter
+                // by active nodes so that client has higher likelihood
+                // of contacting a live DataNode.
+                List<Operations.DataNode> availableNodes = filteredBlockInfoList
+                        .map(blockInfo -> blockInfo.node)
+                        .filter(node -> activeNodes.containsKey(node.id))
+                        .map(NameNode::convertDataNodeToProto)
+                        .collect(Collectors.toList());
+
+                return createGetBlockLocationsResponse(
+                        Operations.StatusCode.OK,
+                        availableNodes);
+            }
+        }
     }
 
 
     public byte[] assignBlock(byte[] inp) throws RemoteException {
-        return null;
+        synchronized (nodeLock) {
+            List<DataNode> nodes = new ArrayList<>(activeNodes.values());
+            Collections.shuffle(nodes);
+
+            List<Operations.DataNode> assignedNodes = nodes
+                    .subList(0, REPLICATION_FACTOR)
+                    .stream()
+                    .map(NameNode::convertDataNodeToProto)
+                    .collect(Collectors.toList());
+
+            return Operations.AssignBlockResponse
+                    .newBuilder()
+                    .setStatus(Operations.StatusCode.OK)
+                    .addAllNodes(assignedNodes)
+                    .build()
+                    .toByteArray();
+        }
     }
 
 
@@ -186,7 +234,7 @@ public class NameNode implements INameNode {
 
             // If we don't have info on the node,
             // start storing info on it
-            if(!activeNodes.containsKey(nodeId)) {
+            if (!activeNodes.containsKey(nodeId)) {
                 activeNodes.put(nodeId, new DataNode(heartbeat.getNode()));
             }
 
@@ -198,17 +246,17 @@ public class NameNode implements INameNode {
                 // Map all the DataNode's blocks to a flat list
                 // so that we can take the union of it with the
                 // existing block info stored on NameNode.
-                List<DataNodeBlockInfo> nodeBlockInfoList =
-                        heartbeat.getAvailableFileBlocksList()
-                            .stream()
-                            .flatMap(fileBlocks -> fileBlocks.getFileBlocksList()
-                                    .stream()
-                                    .map(blockNumber -> new DataNodeBlockInfo(
-                                            fileBlocks.getFilename(),
-                                            blockNumber,
-                                            new DataNode(heartbeat.getNode())
-                                    )))
-                            .collect(Collectors.toList());
+                List<DataNodeBlockInfo> nodeBlockInfoList = heartbeat
+                        .getAvailableFileBlocksList()
+                        .stream()
+                        .flatMap(fileBlocks -> fileBlocks.getFileBlocksList()
+                                .stream()
+                                .map(blockNumber -> new DataNodeBlockInfo(
+                                        fileBlocks.getFilename(),
+                                        blockNumber,
+                                        new DataNode(heartbeat.getNode())
+                                )))
+                        .collect(Collectors.toList());
 
                 blockInfoList.addAll(nodeBlockInfoList);
             }
@@ -221,6 +269,30 @@ public class NameNode implements INameNode {
                 .setStatus(status)
                 .build()
                 .toByteArray();
+    }
+
+    private static byte[] createGetBlockLocationsResponse(Operations.StatusCode status) {
+        return createGetBlockLocationsResponse(status, null);
+    }
+
+    private static byte[] createGetBlockLocationsResponse(
+            Operations.StatusCode status,
+            List<Operations.DataNode> nodes
+    ) {
+        return Operations.GetBlockLocationsResponse
+                .newBuilder()
+                .setStatus(status)
+                .addAllNodes(nodes)
+                .build()
+                .toByteArray();
+    }
+
+    private static Operations.DataNode convertDataNodeToProto(DataNode node) {
+        return Operations.DataNode.newBuilder()
+                .setIp(node.ip)
+                .setPort(node.port)
+                .setId(node.id)
+                .build();
     }
 
     public static class DataNode {
@@ -251,10 +323,10 @@ public class NameNode implements INameNode {
 
     /**
      * [
-     *   [File 1, Block 1, Node 1],
-     *   [File 1, Block 1, Node 2],
-     *   [File 1, Block 2, Node 2],
-     *   [File 1, Block 2, Node 3],
+     * [File 1, Block 1, Node 1],
+     * [File 1, Block 1, Node 2],
+     * [File 1, Block 2, Node 2],
+     * [File 1, Block 2, Node 3],
      * ]
      */
     public static class DataNodeBlockInfo {
@@ -270,7 +342,7 @@ public class NameNode implements INameNode {
 
         @Override
         public boolean equals(Object obj) {
-            if(! (obj instanceof DataNodeBlockInfo))
+            if (!(obj instanceof DataNodeBlockInfo))
                 return false;
 
             DataNodeBlockInfo other = (DataNodeBlockInfo) obj;
