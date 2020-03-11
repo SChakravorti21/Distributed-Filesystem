@@ -46,19 +46,14 @@ public class DataNode implements IDataNode {
     public static void main(String[] args) {
         try {
             // Get NameNode's configuration
-            Map<String, String> config = Files.lines(Paths.get(args[0]))
-                    .map(line -> line.split("="))
-                    .collect(Collectors.toMap(
-                            line -> line[0],
-                            line -> line[1]
-                    ));
-
+            Map<String, String> config = parseConfigFile(args[0]);
             int id = Integer.parseInt(config.get("ID"));
             String ip = config.get("IP");
             int port = Integer.parseInt(config.get("PORT"));
 
             // DataNode needs access to NameNode for sending heartbeats
-            Registry serverRegistry = LocateRegistry.getRegistry(NameNode.REGISTRY_PORT);
+            String registryHost = parseConfigFile("src/nn_config.txt").get("IP");
+            Registry serverRegistry = LocateRegistry.getRegistry(registryHost, NameNode.REGISTRY_PORT);
             INameNode nameNode = (INameNode) serverRegistry.lookup("INameNode");
 
             // Bind remote object's stub in registry
@@ -89,6 +84,15 @@ public class DataNode implements IDataNode {
             e.printStackTrace();
             System.err.println("NameNode is not up");
         }
+    }
+
+    private static Map<String, String> parseConfigFile(String filename) throws IOException {
+        return Files.lines(Paths.get(filename))
+                .map(line -> line.split("="))
+                .collect(Collectors.toMap(
+                        line -> line[0],
+                        line -> line[1]
+                ));
     }
 
     public static void appendtoFile(String Filename, String Line) {
