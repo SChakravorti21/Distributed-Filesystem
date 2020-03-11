@@ -23,21 +23,33 @@ public class DataNode implements IDataNode {
     private int port;
     private int id;
     private INameNode nameNode;
+    private long failedHeartbeats = 0;
     private Timer timer = new Timer();
 
-    public DataNode(int id, String ip, int port, INameNode nameNode) {
+    public DataNode(int id, String ip, int port) throws IOException, NotBoundException {
         this.id = id;
         this.ip = ip;
         this.port = port;
-        this.nameNode = nameNode;
+        this.nameNode = connectNameNode();
 
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
                 try {
                     sendHeartbeat();
-                } catch (RemoteException e) {
+                } catch (RemoteException re) {
+                    failedHeartbeats++;
                     System.err.println("Failed to send heartbeat");
+
+                    // If we fail to send heartbeats multiple times
+                    // in a row, try to reconnect to NameNode
+                    if(failedHeartbeats % 10 == 0) {
+                        try {
+                            nameNode = connectNameNode();
+                        } catch (Exception e) {
+                            System.err.println("Failed to connect to NameNode");
+                        }
+                    }
                 }
             }
         }, 0, HEARTBEAT_INTERVAL);
@@ -51,13 +63,8 @@ public class DataNode implements IDataNode {
             String ip = config.get("IP");
             int port = Integer.parseInt(config.get("PORT"));
 
-            // DataNode needs access to NameNode for sending heartbeats
-            String registryHost = parseConfigFile("src/nn_config.txt").get("IP");
-            Registry serverRegistry = LocateRegistry.getRegistry(registryHost, NameNode.REGISTRY_PORT);
-            INameNode nameNode = (INameNode) serverRegistry.lookup("INameNode");
-
             // Bind remote object's stub in registry
-            DataNode node = new DataNode(id, ip, port, nameNode);
+            DataNode node = new DataNode(id, ip, port);
             IDataNode stub = (IDataNode) UnicastRemoteObject.exportObject(node, port);
             String nodeName = String.format("IDataNode-%d", id);
             Registry localRegistry = bindStub(nodeName, stub);
@@ -106,6 +113,12 @@ public class DataNode implements IDataNode {
             localRegistry.bind(nodeName, stub);
             return localRegistry;
         }
+    }
+
+    private static INameNode connectNameNode() throws IOException, NotBoundException {
+        String registryHost = parseConfigFile("src/nn_config.txt").get("IP");
+        Registry serverRegistry = LocateRegistry.getRegistry(registryHost, NameNode.REGISTRY_PORT);
+        return (INameNode) serverRegistry.lookup("INameNode");
     }
 
     public static void appendtoFile(String Filename, String Line) {
@@ -222,36 +235,6 @@ public class DataNode implements IDataNode {
                 .toByteArray();
 
         nameNode.heartBeat(heartbeat);
-    }
-
-    public void BlockReport() throws IOException {
-    }
-
-    public void BindServer(String Name, String IP, int Port) {
-        try {
-            IDataNode stub = (IDataNode) UnicastRemoteObject.exportObject(this, 0);
-            System.setProperty("java.rmi.server.hostname", IP);
-            Registry registry = LocateRegistry.getRegistry(Port);
-            registry.rebind(Name, stub);
-            System.out.println("\nDataNode connected to RMIregistry\n");
-        } catch (Exception e) {
-            System.err.println("Server Exception: " + e.toString());
-            e.printStackTrace();
-        }
-    }
-
-    public INameNode GetNNStub(String Name, String IP, int Port) {
-        while (true) {
-            try {
-                Registry registry = LocateRegistry.getRegistry(IP, Port);
-                INameNode stub = (INameNode) registry.lookup(Name);
-                System.out.println("NameNode Found!");
-                return stub;
-            } catch (Exception e) {
-                System.out.println("NameNode still not Found");
-                continue;
-            }
-        }
     }
 
     private static byte[] createReadWriteResponse(Operations.StatusCode status) {
