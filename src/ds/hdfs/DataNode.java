@@ -60,29 +60,29 @@ public class DataNode implements IDataNode {
             DataNode node = new DataNode(id, ip, port, nameNode);
             IDataNode stub = (IDataNode) UnicastRemoteObject.exportObject(node, port);
             String nodeName = String.format("IDataNode-%d", id);
-            serverRegistry.bind(nodeName, stub);
+            Registry localRegistry = bindStub(nodeName, stub);
 
             // We need to unbind the DataNode from the registry
             // in case it needs to restart (in which case it will have
             // the same name and the registry will refuse to bind it)
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 try {
-                    serverRegistry.unbind(nodeName);
+                    localRegistry.unbind(nodeName);
                 } catch (Exception e) {
                     // error will not occur
                 }
             }));
 
             System.out.println(String.format("DataNode ready! (IP %s, PORT %d)", ip, port));
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.err.println("Failed to read data node config file");
         } catch (AlreadyBoundException e) {
             e.printStackTrace();
             System.err.println("DataNode is already bound to the specified port");
         } catch (NotBoundException e) {
             e.printStackTrace();
             System.err.println("NameNode is not up");
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println("Failed to read data node config file");
         }
     }
 
@@ -93,6 +93,19 @@ public class DataNode implements IDataNode {
                         line -> line[0],
                         line -> line[1]
                 ));
+    }
+
+    private static Registry bindStub(String nodeName, IDataNode stub)
+            throws AlreadyBoundException, RemoteException {
+        try {
+            Registry localRegistry = LocateRegistry.getRegistry(NameNode.REGISTRY_PORT);
+            localRegistry.bind(nodeName, stub);
+            return localRegistry;
+        } catch (ConnectException e) {
+            Registry localRegistry = LocateRegistry.createRegistry(NameNode.REGISTRY_PORT);
+            localRegistry.bind(nodeName, stub);
+            return localRegistry;
+        }
     }
 
     public static void appendtoFile(String Filename, String Line) {
