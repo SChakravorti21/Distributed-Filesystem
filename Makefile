@@ -5,7 +5,11 @@ clean:
 
 build: clean
 	javac -d build -g -sourcepath src -cp $(CLASSPATH) \
-		src/ds/hdfs/NameNode.java
+		src/ds/hdfs/NameNode.java \
+		src/ds/hdfs/DataNode.java
 
-run_name_node: build
+run_name_node:
 	java -cp ${CLASSPATH} ds.hdfs.NameNode
+
+run_data_node:
+	java -cp ${CLASSPATH} ds.hdfs.DataNode ${CONFIG}

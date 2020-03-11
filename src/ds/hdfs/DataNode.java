@@ -10,31 +10,85 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.rmi.*;
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 import com.google.protobuf.ByteString;
-import com.google.protobuf.InvalidProtocolBufferException;
 
 import java.io.*;
-import java.nio.charset.Charset;
 import java.util.stream.Collectors;
 
-import ds.hdfs.IDataNode.*;
-
 public class DataNode implements IDataNode {
-    protected String MyChunksFile;
-    protected INameNode NNStub;
-    protected String ip;
-    protected int port;
-    protected String name;
-    protected int id;
+    private static final long HEARTBEAT_INTERVAL = 250;
 
-    public DataNode() {
-        //Constructor
+    private String ip;
+    private int port;
+    private int id;
+    private INameNode nameNode;
+    private Timer timer = new Timer();
+
+    public DataNode(int id, String ip, int port, INameNode nameNode) {
+        this.id = id;
+        this.ip = ip;
+        this.port = port;
+        this.nameNode = nameNode;
+
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                try {
+                    sendHeartbeat();
+                } catch (RemoteException e) {
+                    System.err.println("Failed to send heartbeat");
+                }
+            }
+        }, 0, HEARTBEAT_INTERVAL);
+    }
+
+    public static void main(String[] args) {
+        try {
+            // Get NameNode's configuration
+            Map<String, String> config = Files.lines(Paths.get(args[0]))
+                    .map(line -> line.split("="))
+                    .collect(Collectors.toMap(
+                            line -> line[0],
+                            line -> line[1]
+                    ));
+
+            int id = Integer.parseInt(config.get("ID"));
+            String ip = config.get("IP");
+            int port = Integer.parseInt(config.get("PORT"));
+
+            // DataNode needs access to NameNode for sending heartbeats
+            Registry serverRegistry = LocateRegistry.getRegistry(NameNode.REGISTRY_PORT);
+            INameNode nameNode = (INameNode) serverRegistry.lookup("INameNode");
+
+            // Bind remote object's stub in registry
+            DataNode node = new DataNode(id, ip, port, nameNode);
+            IDataNode stub = (IDataNode) UnicastRemoteObject.exportObject(node, port);
+            String nodeName = String.format("IDataNode-%d", id);
+            serverRegistry.bind(nodeName, stub);
+
+            // We need to unbind the DataNode from the registry
+            // in case it needs to restart (in which case it will have
+            // the same name and the registry will refuse to bind it)
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                try {
+                    serverRegistry.unbind(nodeName);
+                } catch (Exception e) {
+                    // error will not occur
+                }
+            }));
+
+            System.out.println(String.format("DataNode ready! (IP %s, PORT %d)", ip, port));
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println("Failed to read data node config file");
+        } catch (AlreadyBoundException e) {
+            e.printStackTrace();
+            System.err.println("DataNode is already bound to the specified port");
+        } catch (NotBoundException e) {
+            e.printStackTrace();
+            System.err.println("NameNode is not up");
+        }
     }
 
     public static void appendtoFile(String Filename, String Line) {
@@ -118,11 +172,14 @@ public class DataNode implements IDataNode {
         return createReadWriteResponse(Operations.StatusCode.OK);
     }
 
-    @Override
-    public byte[] blockReport(byte[] inp) throws RemoteException {
+    public void sendHeartbeat() throws RemoteException {
         File folder = new File("data/node1");
+        File[] files = folder.listFiles();
 
-        List<Operations.FileBlock> blocks = Arrays.stream(folder.listFiles())
+        if(files == null)
+            files = new File[0];
+
+        List<Operations.FileBlock> blocks = Arrays.stream(files)
                 .map(File::getName)
                 .map(blockFilename -> {
                     int extensionIndex = blockFilename.lastIndexOf(".");
@@ -135,7 +192,7 @@ public class DataNode implements IDataNode {
                             .build();
                 }).collect(Collectors.toList());
 
-        return Operations.Heartbeat
+        byte[] heartbeat = Operations.Heartbeat
                 .newBuilder()
                 .setNode(Operations.DataNode
                             .newBuilder()
@@ -146,6 +203,8 @@ public class DataNode implements IDataNode {
                 .addAllAvailableFileBlocks(blocks)
                 .build()
                 .toByteArray();
+
+        nameNode.heartBeat(heartbeat);
     }
 
     public void BlockReport() throws IOException {
@@ -184,12 +243,5 @@ public class DataNode implements IDataNode {
                 .setStatus(status)
                 .build()
                 .toByteArray();
-    }
-
-    public static void main(String args[]) throws InvalidProtocolBufferException, IOException {
-        //Define a Datanode Me
-        DataNode Me = new DataNode();
-        byte[] arr = new byte[10];
-        Me.blockReport(arr);
     }
 }

@@ -9,11 +9,4 @@ public interface IDataNode extends Remote{
 	
 	/* Method to write data to a specific block */
 	byte[] writeBlock(byte[] inp) throws RemoteException;	
-
-	/*
-		Datanode <-> Namenode interaction methods
-	*/
-	
-	/* Get the status for blocks */
-	byte[] blockReport(byte[] inp ) throws RemoteException;
 }

@@ -56,7 +56,7 @@ public class NameNode implements INameNode {
             @Override
             public void run() {
                 long currentTime = System.currentTimeMillis();
-                System.out.println(currentTime);
+                System.out.println(activeNodes.toString());
 
                 synchronized (nodeLock) {
                     activeNodes = activeNodes.keySet()
