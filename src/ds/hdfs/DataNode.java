@@ -21,16 +21,17 @@ import com.google.protobuf.InvalidProtocolBufferException;
 
 import java.io.*;
 import java.nio.charset.Charset;
+import java.util.stream.Collectors;
 
 import ds.hdfs.IDataNode.*;
 
 public class DataNode implements IDataNode {
     protected String MyChunksFile;
     protected INameNode NNStub;
-    protected String MyIP;
-    protected int MyPort;
-    protected String MyName;
-    protected int MyID;
+    protected String ip;
+    protected int port;
+    protected String name;
+    protected int id;
 
     public DataNode() {
         //Constructor
@@ -119,38 +120,32 @@ public class DataNode implements IDataNode {
 
     @Override
     public byte[] blockReport(byte[] inp) throws RemoteException {
-
         File folder = new File("data/node1");
-        File[] listOfFiles = folder.listFiles();
-        HashMap<String, Operations.FileBlocks.Builder> map = new HashMap<String, Operations.FileBlocks.Builder>();
 
-        for (int i = 0; i < listOfFiles.length; i++) {
-            if (listOfFiles[i].isFile()) {
-                String fullFileName = listOfFiles[i].getName();
-                int lastIndex = fullFileName.lastIndexOf(".");
+        List<Operations.FileBlock> blocks = Arrays.stream(folder.listFiles())
+                .map(File::getName)
+                .map(blockFilename -> {
+                    int extensionIndex = blockFilename.lastIndexOf(".");
+                    String filename = blockFilename.substring(0, extensionIndex);
+                    String blockNumber = blockFilename.substring(extensionIndex + 1);
 
-                String fileName = fullFileName.substring(0, lastIndex);
-                long index = Long.valueOf(fullFileName.substring(lastIndex+1));
+                    return Operations.FileBlock.newBuilder()
+                            .setFilename(filename)
+                            .setFileBlock(Integer.parseInt(blockNumber))
+                            .build();
+                }).collect(Collectors.toList());
 
-                Operations.FileBlocks.Builder def = Operations.FileBlocks.newBuilder().setFilename(fileName);
-                Operations.FileBlocks.Builder curr = map.getOrDefault(fileName, def);
-                curr.addFileBlocks(index);
-
-//                System.out.println("File: " + filename.substring(0, lastIndex));
-//                System.out.println("Block: " + filename.substring(lastIndex+1));
-            }
-        }
-
-        Operations.Heartbeat.Builder heartbeat = Operations.Heartbeat.newBuilder();
-        for(String key : map.keySet()) {
-            heartbeat.addAvailableFileBlocks( (Operations.FileBlocks.Builder) map.get(key) );
-        }
-
-        // Add IP, Port
-        Operations.DataNode.Builder node = Operations.DataNode.newBuilder();
-        heartbeat.setNode(node);
-
-        return heartbeat.build().toByteArray();
+        return Operations.Heartbeat
+                .newBuilder()
+                .setNode(Operations.DataNode
+                            .newBuilder()
+                            .setId(id)
+                            .setIp(ip)
+                            .setPort(port)
+                            .build())
+                .addAllAvailableFileBlocks(blocks)
+                .build()
+                .toByteArray();
     }
 
     public void BlockReport() throws IOException {

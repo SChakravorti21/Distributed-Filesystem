@@ -105,7 +105,7 @@ public class NameNode implements INameNode {
         }
     }
 
-    public byte[] openFile(byte[] req) throws RemoteException {
+    public byte[] openFile(byte[] req)  {
         Operations.OpenCloseRequest request;
         Operations.StatusCode status = Operations.StatusCode.OK;
 
@@ -143,7 +143,7 @@ public class NameNode implements INameNode {
         return createOpenCloseResponse(status);
     }
 
-    public byte[] closeFile(byte[] req) throws RemoteException {
+    public byte[] closeFile(byte[] req)  {
         Operations.OpenCloseRequest request;
         Operations.StatusCode status = Operations.StatusCode.OK;
 
@@ -176,7 +176,7 @@ public class NameNode implements INameNode {
         return createOpenCloseResponse(status);
     }
 
-    public byte[] getBlockLocations(byte[] req) throws RemoteException {
+    public byte[] getBlockLocations(byte[] req) {
         Operations.GetBlockLocationsRequest request;
 
         try {
@@ -218,7 +218,7 @@ public class NameNode implements INameNode {
     }
 
 
-    public byte[] assignBlock(byte[] inp) throws RemoteException {
+    public byte[] assignBlock(byte[] inp) {
         synchronized (nodeLock) {
             List<DataNode> nodes = new ArrayList<>(activeNodes.values());
             Collections.shuffle(nodes);
@@ -239,7 +239,7 @@ public class NameNode implements INameNode {
     }
 
 
-    public byte[] list(byte[] inp) throws RemoteException {
+    public byte[] list(byte[] inp) {
         synchronized (fileLock) {
             return Operations.ListResponse
                     .newBuilder()
@@ -256,7 +256,7 @@ public class NameNode implements INameNode {
     }
 
 
-    public void heartBeat(byte[] req) throws RemoteException {
+    public void heartBeat(byte[] req) {
         Operations.Heartbeat heartbeat;
 
         try {
@@ -269,8 +269,8 @@ public class NameNode implements INameNode {
         synchronized (nodeLock) {
             int nodeId = heartbeat.getNode().getId();
 
-            // If we don't have info on the node,
-            // start storing info on it
+            // If we don't have info on the node or it has
+            // restarted, start tracking it
             if (!activeNodes.containsKey(nodeId)) {
                 activeNodes.put(nodeId, new DataNode(heartbeat.getNode()));
             }
@@ -286,13 +286,10 @@ public class NameNode implements INameNode {
                 List<DataNodeBlockInfo> nodeBlockInfoList = heartbeat
                         .getAvailableFileBlocksList()
                         .stream()
-                        .flatMap(fileBlocks -> fileBlocks.getFileBlocksList()
-                                .stream()
-                                .map(blockNumber -> new DataNodeBlockInfo(
-                                        fileBlocks.getFilename(),
-                                        blockNumber,
-                                        new DataNode(heartbeat.getNode())
-                                )))
+                        .map(fileBlock -> new DataNodeBlockInfo(
+                                        fileBlock.getFilename(),
+                                        fileBlock.getFileBlock(),
+                                        new DataNode(heartbeat.getNode())))
                         .collect(Collectors.toList());
 
                 blockInfoList.addAll(nodeBlockInfoList);

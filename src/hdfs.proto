@@ -77,17 +77,17 @@ message ListResponse {
     repeated string filenames = 2;
 }
 
-message FileBlocks {
+message FileBlock {
     required string filename = 1;
-    repeated int64 fileBlocks = 2;
+    required int64 fileBlock = 2;
 }
 
 message Heartbeat {
     required DataNode node = 1;
-    repeated FileBlocks availableFileBlocks = 2;
+    repeated FileBlock availableFileBlocks = 2;
 }
 
 message BlockReportResponse {
     required StatusCode status = 1;
-    repeated FileBlocks availableFileBlocks = 2;
+    repeated FileBlock availableFileBlocks = 2;
 }

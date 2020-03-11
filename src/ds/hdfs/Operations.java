@@ -8209,8 +8209,8 @@ public final class Operations {
 
   }
 
-  public interface FileBlocksOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:hdfs.FileBlocks)
+  public interface FileBlockOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:hdfs.FileBlock)
       com.google.protobuf.MessageOrBuilder {
 
     /**
@@ -8231,44 +8231,37 @@ public final class Operations {
         getFilenameBytes();
 
     /**
-     * <code>repeated int64 fileBlocks = 2;</code>
-     * @return A list containing the fileBlocks.
+     * <code>required int64 fileBlock = 2;</code>
+     * @return Whether the fileBlock field is set.
      */
-    java.util.List<java.lang.Long> getFileBlocksList();
+    boolean hasFileBlock();
     /**
-     * <code>repeated int64 fileBlocks = 2;</code>
-     * @return The count of fileBlocks.
+     * <code>required int64 fileBlock = 2;</code>
+     * @return The fileBlock.
      */
-    int getFileBlocksCount();
-    /**
-     * <code>repeated int64 fileBlocks = 2;</code>
-     * @param index The index of the element to return.
-     * @return The fileBlocks at the given index.
-     */
-    long getFileBlocks(int index);
+    long getFileBlock();
   }
   /**
-   * Protobuf type {@code hdfs.FileBlocks}
+   * Protobuf type {@code hdfs.FileBlock}
    */
-  public  static final class FileBlocks extends
+  public  static final class FileBlock extends
       com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:hdfs.FileBlocks)
-      FileBlocksOrBuilder {
+      // @@protoc_insertion_point(message_implements:hdfs.FileBlock)
+      FileBlockOrBuilder {
   private static final long serialVersionUID = 0L;
-    // Use FileBlocks.newBuilder() to construct.
-    private FileBlocks(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+    // Use FileBlock.newBuilder() to construct.
+    private FileBlock(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
-    private FileBlocks() {
+    private FileBlock() {
       filename_ = "";
-      fileBlocks_ = emptyLongList();
     }
 
     @java.lang.Override
     @SuppressWarnings({"unused"})
     protected java.lang.Object newInstance(
         UnusedPrivateParameter unused) {
-      return new FileBlocks();
+      return new FileBlock();
     }
 
     @java.lang.Override
@@ -8276,7 +8269,7 @@ public final class Operations {
     getUnknownFields() {
       return this.unknownFields;
     }
-    private FileBlocks(
+    private FileBlock(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -8302,24 +8295,8 @@ public final class Operations {
               break;
             }
             case 16: {
-              if (!((mutable_bitField0_ & 0x00000002) != 0)) {
-                fileBlocks_ = newLongList();
-                mutable_bitField0_ |= 0x00000002;
-              }
-              fileBlocks_.addLong(input.readInt64());
-              break;
-            }
-            case 18: {
-              int length = input.readRawVarint32();
-              int limit = input.pushLimit(length);
-              if (!((mutable_bitField0_ & 0x00000002) != 0) && input.getBytesUntilLimit() > 0) {
-                fileBlocks_ = newLongList();
-                mutable_bitField0_ |= 0x00000002;
-              }
-              while (input.getBytesUntilLimit() > 0) {
-                fileBlocks_.addLong(input.readInt64());
-              }
-              input.popLimit(limit);
+              bitField0_ |= 0x00000002;
+              fileBlock_ = input.readInt64();
               break;
             }
             default: {
@@ -8337,24 +8314,21 @@ public final class Operations {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000002) != 0)) {
-          fileBlocks_.makeImmutable(); // C
-        }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return ds.hdfs.Operations.internal_static_hdfs_FileBlocks_descriptor;
+      return ds.hdfs.Operations.internal_static_hdfs_FileBlock_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return ds.hdfs.Operations.internal_static_hdfs_FileBlocks_fieldAccessorTable
+      return ds.hdfs.Operations.internal_static_hdfs_FileBlock_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              ds.hdfs.Operations.FileBlocks.class, ds.hdfs.Operations.FileBlocks.Builder.class);
+              ds.hdfs.Operations.FileBlock.class, ds.hdfs.Operations.FileBlock.Builder.class);
     }
 
     private int bitField0_;
@@ -8403,30 +8377,21 @@ public final class Operations {
       }
     }
 
-    public static final int FILEBLOCKS_FIELD_NUMBER = 2;
-    private com.google.protobuf.Internal.LongList fileBlocks_;
+    public static final int FILEBLOCK_FIELD_NUMBER = 2;
+    private long fileBlock_;
     /**
-     * <code>repeated int64 fileBlocks = 2;</code>
-     * @return A list containing the fileBlocks.
+     * <code>required int64 fileBlock = 2;</code>
+     * @return Whether the fileBlock field is set.
      */
-    public java.util.List<java.lang.Long>
-        getFileBlocksList() {
-      return fileBlocks_;
+    public boolean hasFileBlock() {
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
-     * <code>repeated int64 fileBlocks = 2;</code>
-     * @return The count of fileBlocks.
+     * <code>required int64 fileBlock = 2;</code>
+     * @return The fileBlock.
      */
-    public int getFileBlocksCount() {
-      return fileBlocks_.size();
-    }
-    /**
-     * <code>repeated int64 fileBlocks = 2;</code>
-     * @param index The index of the element to return.
-     * @return The fileBlocks at the given index.
-     */
-    public long getFileBlocks(int index) {
-      return fileBlocks_.getLong(index);
+    public long getFileBlock() {
+      return fileBlock_;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -8440,6 +8405,10 @@ public final class Operations {
         memoizedIsInitialized = 0;
         return false;
       }
+      if (!hasFileBlock()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -8450,8 +8419,8 @@ public final class Operations {
       if (((bitField0_ & 0x00000001) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, filename_);
       }
-      for (int i = 0; i < fileBlocks_.size(); i++) {
-        output.writeInt64(2, fileBlocks_.getLong(i));
+      if (((bitField0_ & 0x00000002) != 0)) {
+        output.writeInt64(2, fileBlock_);
       }
       unknownFields.writeTo(output);
     }
@@ -8465,14 +8434,9 @@ public final class Operations {
       if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, filename_);
       }
-      {
-        int dataSize = 0;
-        for (int i = 0; i < fileBlocks_.size(); i++) {
-          dataSize += com.google.protobuf.CodedOutputStream
-            .computeInt64SizeNoTag(fileBlocks_.getLong(i));
-        }
-        size += dataSize;
-        size += 1 * getFileBlocksList().size();
+      if (((bitField0_ & 0x00000002) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(2, fileBlock_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -8484,18 +8448,21 @@ public final class Operations {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof ds.hdfs.Operations.FileBlocks)) {
+      if (!(obj instanceof ds.hdfs.Operations.FileBlock)) {
         return super.equals(obj);
       }
-      ds.hdfs.Operations.FileBlocks other = (ds.hdfs.Operations.FileBlocks) obj;
+      ds.hdfs.Operations.FileBlock other = (ds.hdfs.Operations.FileBlock) obj;
 
       if (hasFilename() != other.hasFilename()) return false;
       if (hasFilename()) {
         if (!getFilename()
             .equals(other.getFilename())) return false;
       }
-      if (!getFileBlocksList()
-          .equals(other.getFileBlocksList())) return false;
+      if (hasFileBlock() != other.hasFileBlock()) return false;
+      if (hasFileBlock()) {
+        if (getFileBlock()
+            != other.getFileBlock()) return false;
+      }
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
@@ -8511,78 +8478,79 @@ public final class Operations {
         hash = (37 * hash) + FILENAME_FIELD_NUMBER;
         hash = (53 * hash) + getFilename().hashCode();
       }
-      if (getFileBlocksCount() > 0) {
-        hash = (37 * hash) + FILEBLOCKS_FIELD_NUMBER;
-        hash = (53 * hash) + getFileBlocksList().hashCode();
+      if (hasFileBlock()) {
+        hash = (37 * hash) + FILEBLOCK_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+            getFileBlock());
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
     }
 
-    public static ds.hdfs.Operations.FileBlocks parseFrom(
+    public static ds.hdfs.Operations.FileBlock parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static ds.hdfs.Operations.FileBlocks parseFrom(
+    public static ds.hdfs.Operations.FileBlock parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static ds.hdfs.Operations.FileBlocks parseFrom(
+    public static ds.hdfs.Operations.FileBlock parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static ds.hdfs.Operations.FileBlocks parseFrom(
+    public static ds.hdfs.Operations.FileBlock parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static ds.hdfs.Operations.FileBlocks parseFrom(byte[] data)
+    public static ds.hdfs.Operations.FileBlock parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static ds.hdfs.Operations.FileBlocks parseFrom(
+    public static ds.hdfs.Operations.FileBlock parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static ds.hdfs.Operations.FileBlocks parseFrom(java.io.InputStream input)
+    public static ds.hdfs.Operations.FileBlock parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static ds.hdfs.Operations.FileBlocks parseFrom(
+    public static ds.hdfs.Operations.FileBlock parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static ds.hdfs.Operations.FileBlocks parseDelimitedFrom(java.io.InputStream input)
+    public static ds.hdfs.Operations.FileBlock parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static ds.hdfs.Operations.FileBlocks parseDelimitedFrom(
+    public static ds.hdfs.Operations.FileBlock parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static ds.hdfs.Operations.FileBlocks parseFrom(
+    public static ds.hdfs.Operations.FileBlock parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static ds.hdfs.Operations.FileBlocks parseFrom(
+    public static ds.hdfs.Operations.FileBlock parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -8595,7 +8563,7 @@ public final class Operations {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(ds.hdfs.Operations.FileBlocks prototype) {
+    public static Builder newBuilder(ds.hdfs.Operations.FileBlock prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @java.lang.Override
@@ -8611,26 +8579,26 @@ public final class Operations {
       return builder;
     }
     /**
-     * Protobuf type {@code hdfs.FileBlocks}
+     * Protobuf type {@code hdfs.FileBlock}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:hdfs.FileBlocks)
-        ds.hdfs.Operations.FileBlocksOrBuilder {
+        // @@protoc_insertion_point(builder_implements:hdfs.FileBlock)
+        ds.hdfs.Operations.FileBlockOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return ds.hdfs.Operations.internal_static_hdfs_FileBlocks_descriptor;
+        return ds.hdfs.Operations.internal_static_hdfs_FileBlock_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return ds.hdfs.Operations.internal_static_hdfs_FileBlocks_fieldAccessorTable
+        return ds.hdfs.Operations.internal_static_hdfs_FileBlock_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                ds.hdfs.Operations.FileBlocks.class, ds.hdfs.Operations.FileBlocks.Builder.class);
+                ds.hdfs.Operations.FileBlock.class, ds.hdfs.Operations.FileBlock.Builder.class);
       }
 
-      // Construct using ds.hdfs.Operations.FileBlocks.newBuilder()
+      // Construct using ds.hdfs.Operations.FileBlock.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -8650,7 +8618,7 @@ public final class Operations {
         super.clear();
         filename_ = "";
         bitField0_ = (bitField0_ & ~0x00000001);
-        fileBlocks_ = emptyLongList();
+        fileBlock_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000002);
         return this;
       }
@@ -8658,17 +8626,17 @@ public final class Operations {
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return ds.hdfs.Operations.internal_static_hdfs_FileBlocks_descriptor;
+        return ds.hdfs.Operations.internal_static_hdfs_FileBlock_descriptor;
       }
 
       @java.lang.Override
-      public ds.hdfs.Operations.FileBlocks getDefaultInstanceForType() {
-        return ds.hdfs.Operations.FileBlocks.getDefaultInstance();
+      public ds.hdfs.Operations.FileBlock getDefaultInstanceForType() {
+        return ds.hdfs.Operations.FileBlock.getDefaultInstance();
       }
 
       @java.lang.Override
-      public ds.hdfs.Operations.FileBlocks build() {
-        ds.hdfs.Operations.FileBlocks result = buildPartial();
+      public ds.hdfs.Operations.FileBlock build() {
+        ds.hdfs.Operations.FileBlock result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -8676,19 +8644,18 @@ public final class Operations {
       }
 
       @java.lang.Override
-      public ds.hdfs.Operations.FileBlocks buildPartial() {
-        ds.hdfs.Operations.FileBlocks result = new ds.hdfs.Operations.FileBlocks(this);
+      public ds.hdfs.Operations.FileBlock buildPartial() {
+        ds.hdfs.Operations.FileBlock result = new ds.hdfs.Operations.FileBlock(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) != 0)) {
           to_bitField0_ |= 0x00000001;
         }
         result.filename_ = filename_;
-        if (((bitField0_ & 0x00000002) != 0)) {
-          fileBlocks_.makeImmutable();
-          bitField0_ = (bitField0_ & ~0x00000002);
+        if (((from_bitField0_ & 0x00000002) != 0)) {
+          result.fileBlock_ = fileBlock_;
+          to_bitField0_ |= 0x00000002;
         }
-        result.fileBlocks_ = fileBlocks_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -8728,30 +8695,23 @@ public final class Operations {
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof ds.hdfs.Operations.FileBlocks) {
-          return mergeFrom((ds.hdfs.Operations.FileBlocks)other);
+        if (other instanceof ds.hdfs.Operations.FileBlock) {
+          return mergeFrom((ds.hdfs.Operations.FileBlock)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(ds.hdfs.Operations.FileBlocks other) {
-        if (other == ds.hdfs.Operations.FileBlocks.getDefaultInstance()) return this;
+      public Builder mergeFrom(ds.hdfs.Operations.FileBlock other) {
+        if (other == ds.hdfs.Operations.FileBlock.getDefaultInstance()) return this;
         if (other.hasFilename()) {
           bitField0_ |= 0x00000001;
           filename_ = other.filename_;
           onChanged();
         }
-        if (!other.fileBlocks_.isEmpty()) {
-          if (fileBlocks_.isEmpty()) {
-            fileBlocks_ = other.fileBlocks_;
-            bitField0_ = (bitField0_ & ~0x00000002);
-          } else {
-            ensureFileBlocksIsMutable();
-            fileBlocks_.addAll(other.fileBlocks_);
-          }
-          onChanged();
+        if (other.hasFileBlock()) {
+          setFileBlock(other.getFileBlock());
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -8763,6 +8723,9 @@ public final class Operations {
         if (!hasFilename()) {
           return false;
         }
+        if (!hasFileBlock()) {
+          return false;
+        }
         return true;
       }
 
@@ -8771,11 +8734,11 @@ public final class Operations {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        ds.hdfs.Operations.FileBlocks parsedMessage = null;
+        ds.hdfs.Operations.FileBlock parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (ds.hdfs.Operations.FileBlocks) e.getUnfinishedMessage();
+          parsedMessage = (ds.hdfs.Operations.FileBlock) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -8870,81 +8833,39 @@ public final class Operations {
         return this;
       }
 
-      private com.google.protobuf.Internal.LongList fileBlocks_ = emptyLongList();
-      private void ensureFileBlocksIsMutable() {
-        if (!((bitField0_ & 0x00000002) != 0)) {
-          fileBlocks_ = mutableCopy(fileBlocks_);
-          bitField0_ |= 0x00000002;
-         }
-      }
+      private long fileBlock_ ;
       /**
-       * <code>repeated int64 fileBlocks = 2;</code>
-       * @return A list containing the fileBlocks.
+       * <code>required int64 fileBlock = 2;</code>
+       * @return Whether the fileBlock field is set.
        */
-      public java.util.List<java.lang.Long>
-          getFileBlocksList() {
-        return ((bitField0_ & 0x00000002) != 0) ?
-                 java.util.Collections.unmodifiableList(fileBlocks_) : fileBlocks_;
+      public boolean hasFileBlock() {
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
-       * <code>repeated int64 fileBlocks = 2;</code>
-       * @return The count of fileBlocks.
+       * <code>required int64 fileBlock = 2;</code>
+       * @return The fileBlock.
        */
-      public int getFileBlocksCount() {
-        return fileBlocks_.size();
+      public long getFileBlock() {
+        return fileBlock_;
       }
       /**
-       * <code>repeated int64 fileBlocks = 2;</code>
-       * @param index The index of the element to return.
-       * @return The fileBlocks at the given index.
-       */
-      public long getFileBlocks(int index) {
-        return fileBlocks_.getLong(index);
-      }
-      /**
-       * <code>repeated int64 fileBlocks = 2;</code>
-       * @param index The index to set the value at.
-       * @param value The fileBlocks to set.
+       * <code>required int64 fileBlock = 2;</code>
+       * @param value The fileBlock to set.
        * @return This builder for chaining.
        */
-      public Builder setFileBlocks(
-          int index, long value) {
-        ensureFileBlocksIsMutable();
-        fileBlocks_.setLong(index, value);
+      public Builder setFileBlock(long value) {
+        bitField0_ |= 0x00000002;
+        fileBlock_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>repeated int64 fileBlocks = 2;</code>
-       * @param value The fileBlocks to add.
+       * <code>required int64 fileBlock = 2;</code>
        * @return This builder for chaining.
        */
-      public Builder addFileBlocks(long value) {
-        ensureFileBlocksIsMutable();
-        fileBlocks_.addLong(value);
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>repeated int64 fileBlocks = 2;</code>
-       * @param values The fileBlocks to add.
-       * @return This builder for chaining.
-       */
-      public Builder addAllFileBlocks(
-          java.lang.Iterable<? extends java.lang.Long> values) {
-        ensureFileBlocksIsMutable();
-        com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, fileBlocks_);
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>repeated int64 fileBlocks = 2;</code>
-       * @return This builder for chaining.
-       */
-      public Builder clearFileBlocks() {
-        fileBlocks_ = emptyLongList();
+      public Builder clearFileBlock() {
         bitField0_ = (bitField0_ & ~0x00000002);
+        fileBlock_ = 0L;
         onChanged();
         return this;
       }
@@ -8961,41 +8882,41 @@ public final class Operations {
       }
 
 
-      // @@protoc_insertion_point(builder_scope:hdfs.FileBlocks)
+      // @@protoc_insertion_point(builder_scope:hdfs.FileBlock)
     }
 
-    // @@protoc_insertion_point(class_scope:hdfs.FileBlocks)
-    private static final ds.hdfs.Operations.FileBlocks DEFAULT_INSTANCE;
+    // @@protoc_insertion_point(class_scope:hdfs.FileBlock)
+    private static final ds.hdfs.Operations.FileBlock DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new ds.hdfs.Operations.FileBlocks();
+      DEFAULT_INSTANCE = new ds.hdfs.Operations.FileBlock();
     }
 
-    public static ds.hdfs.Operations.FileBlocks getDefaultInstance() {
+    public static ds.hdfs.Operations.FileBlock getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
-    @java.lang.Deprecated public static final com.google.protobuf.Parser<FileBlocks>
-        PARSER = new com.google.protobuf.AbstractParser<FileBlocks>() {
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<FileBlock>
+        PARSER = new com.google.protobuf.AbstractParser<FileBlock>() {
       @java.lang.Override
-      public FileBlocks parsePartialFrom(
+      public FileBlock parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new FileBlocks(input, extensionRegistry);
+        return new FileBlock(input, extensionRegistry);
       }
     };
 
-    public static com.google.protobuf.Parser<FileBlocks> parser() {
+    public static com.google.protobuf.Parser<FileBlock> parser() {
       return PARSER;
     }
 
     @java.lang.Override
-    public com.google.protobuf.Parser<FileBlocks> getParserForType() {
+    public com.google.protobuf.Parser<FileBlock> getParserForType() {
       return PARSER;
     }
 
     @java.lang.Override
-    public ds.hdfs.Operations.FileBlocks getDefaultInstanceForType() {
+    public ds.hdfs.Operations.FileBlock getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -9021,27 +8942,27 @@ public final class Operations {
     ds.hdfs.Operations.DataNodeOrBuilder getNodeOrBuilder();
 
     /**
-     * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+     * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
      */
-    java.util.List<ds.hdfs.Operations.FileBlocks> 
+    java.util.List<ds.hdfs.Operations.FileBlock> 
         getAvailableFileBlocksList();
     /**
-     * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+     * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
      */
-    ds.hdfs.Operations.FileBlocks getAvailableFileBlocks(int index);
+    ds.hdfs.Operations.FileBlock getAvailableFileBlocks(int index);
     /**
-     * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+     * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
      */
     int getAvailableFileBlocksCount();
     /**
-     * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+     * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
      */
-    java.util.List<? extends ds.hdfs.Operations.FileBlocksOrBuilder> 
+    java.util.List<? extends ds.hdfs.Operations.FileBlockOrBuilder> 
         getAvailableFileBlocksOrBuilderList();
     /**
-     * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+     * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
      */
-    ds.hdfs.Operations.FileBlocksOrBuilder getAvailableFileBlocksOrBuilder(
+    ds.hdfs.Operations.FileBlockOrBuilder getAvailableFileBlocksOrBuilder(
         int index);
   }
   /**
@@ -9106,11 +9027,11 @@ public final class Operations {
             }
             case 18: {
               if (!((mutable_bitField0_ & 0x00000002) != 0)) {
-                availableFileBlocks_ = new java.util.ArrayList<ds.hdfs.Operations.FileBlocks>();
+                availableFileBlocks_ = new java.util.ArrayList<ds.hdfs.Operations.FileBlock>();
                 mutable_bitField0_ |= 0x00000002;
               }
               availableFileBlocks_.add(
-                  input.readMessage(ds.hdfs.Operations.FileBlocks.PARSER, extensionRegistry));
+                  input.readMessage(ds.hdfs.Operations.FileBlock.PARSER, extensionRegistry));
               break;
             }
             default: {
@@ -9173,36 +9094,36 @@ public final class Operations {
     }
 
     public static final int AVAILABLEFILEBLOCKS_FIELD_NUMBER = 2;
-    private java.util.List<ds.hdfs.Operations.FileBlocks> availableFileBlocks_;
+    private java.util.List<ds.hdfs.Operations.FileBlock> availableFileBlocks_;
     /**
-     * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+     * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
      */
-    public java.util.List<ds.hdfs.Operations.FileBlocks> getAvailableFileBlocksList() {
+    public java.util.List<ds.hdfs.Operations.FileBlock> getAvailableFileBlocksList() {
       return availableFileBlocks_;
     }
     /**
-     * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+     * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
      */
-    public java.util.List<? extends ds.hdfs.Operations.FileBlocksOrBuilder> 
+    public java.util.List<? extends ds.hdfs.Operations.FileBlockOrBuilder> 
         getAvailableFileBlocksOrBuilderList() {
       return availableFileBlocks_;
     }
     /**
-     * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+     * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
      */
     public int getAvailableFileBlocksCount() {
       return availableFileBlocks_.size();
     }
     /**
-     * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+     * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
      */
-    public ds.hdfs.Operations.FileBlocks getAvailableFileBlocks(int index) {
+    public ds.hdfs.Operations.FileBlock getAvailableFileBlocks(int index) {
       return availableFileBlocks_.get(index);
     }
     /**
-     * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+     * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
      */
-    public ds.hdfs.Operations.FileBlocksOrBuilder getAvailableFileBlocksOrBuilder(
+    public ds.hdfs.Operations.FileBlockOrBuilder getAvailableFileBlocksOrBuilder(
         int index) {
       return availableFileBlocks_.get(index);
     }
@@ -9730,22 +9651,22 @@ public final class Operations {
         return nodeBuilder_;
       }
 
-      private java.util.List<ds.hdfs.Operations.FileBlocks> availableFileBlocks_ =
+      private java.util.List<ds.hdfs.Operations.FileBlock> availableFileBlocks_ =
         java.util.Collections.emptyList();
       private void ensureAvailableFileBlocksIsMutable() {
         if (!((bitField0_ & 0x00000002) != 0)) {
-          availableFileBlocks_ = new java.util.ArrayList<ds.hdfs.Operations.FileBlocks>(availableFileBlocks_);
+          availableFileBlocks_ = new java.util.ArrayList<ds.hdfs.Operations.FileBlock>(availableFileBlocks_);
           bitField0_ |= 0x00000002;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          ds.hdfs.Operations.FileBlocks, ds.hdfs.Operations.FileBlocks.Builder, ds.hdfs.Operations.FileBlocksOrBuilder> availableFileBlocksBuilder_;
+          ds.hdfs.Operations.FileBlock, ds.hdfs.Operations.FileBlock.Builder, ds.hdfs.Operations.FileBlockOrBuilder> availableFileBlocksBuilder_;
 
       /**
-       * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+       * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
        */
-      public java.util.List<ds.hdfs.Operations.FileBlocks> getAvailableFileBlocksList() {
+      public java.util.List<ds.hdfs.Operations.FileBlock> getAvailableFileBlocksList() {
         if (availableFileBlocksBuilder_ == null) {
           return java.util.Collections.unmodifiableList(availableFileBlocks_);
         } else {
@@ -9753,7 +9674,7 @@ public final class Operations {
         }
       }
       /**
-       * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+       * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
        */
       public int getAvailableFileBlocksCount() {
         if (availableFileBlocksBuilder_ == null) {
@@ -9763,9 +9684,9 @@ public final class Operations {
         }
       }
       /**
-       * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+       * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
        */
-      public ds.hdfs.Operations.FileBlocks getAvailableFileBlocks(int index) {
+      public ds.hdfs.Operations.FileBlock getAvailableFileBlocks(int index) {
         if (availableFileBlocksBuilder_ == null) {
           return availableFileBlocks_.get(index);
         } else {
@@ -9773,10 +9694,10 @@ public final class Operations {
         }
       }
       /**
-       * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+       * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
        */
       public Builder setAvailableFileBlocks(
-          int index, ds.hdfs.Operations.FileBlocks value) {
+          int index, ds.hdfs.Operations.FileBlock value) {
         if (availableFileBlocksBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -9790,10 +9711,10 @@ public final class Operations {
         return this;
       }
       /**
-       * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+       * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
        */
       public Builder setAvailableFileBlocks(
-          int index, ds.hdfs.Operations.FileBlocks.Builder builderForValue) {
+          int index, ds.hdfs.Operations.FileBlock.Builder builderForValue) {
         if (availableFileBlocksBuilder_ == null) {
           ensureAvailableFileBlocksIsMutable();
           availableFileBlocks_.set(index, builderForValue.build());
@@ -9804,9 +9725,9 @@ public final class Operations {
         return this;
       }
       /**
-       * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+       * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
        */
-      public Builder addAvailableFileBlocks(ds.hdfs.Operations.FileBlocks value) {
+      public Builder addAvailableFileBlocks(ds.hdfs.Operations.FileBlock value) {
         if (availableFileBlocksBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -9820,10 +9741,10 @@ public final class Operations {
         return this;
       }
       /**
-       * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+       * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
        */
       public Builder addAvailableFileBlocks(
-          int index, ds.hdfs.Operations.FileBlocks value) {
+          int index, ds.hdfs.Operations.FileBlock value) {
         if (availableFileBlocksBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -9837,10 +9758,10 @@ public final class Operations {
         return this;
       }
       /**
-       * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+       * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
        */
       public Builder addAvailableFileBlocks(
-          ds.hdfs.Operations.FileBlocks.Builder builderForValue) {
+          ds.hdfs.Operations.FileBlock.Builder builderForValue) {
         if (availableFileBlocksBuilder_ == null) {
           ensureAvailableFileBlocksIsMutable();
           availableFileBlocks_.add(builderForValue.build());
@@ -9851,10 +9772,10 @@ public final class Operations {
         return this;
       }
       /**
-       * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+       * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
        */
       public Builder addAvailableFileBlocks(
-          int index, ds.hdfs.Operations.FileBlocks.Builder builderForValue) {
+          int index, ds.hdfs.Operations.FileBlock.Builder builderForValue) {
         if (availableFileBlocksBuilder_ == null) {
           ensureAvailableFileBlocksIsMutable();
           availableFileBlocks_.add(index, builderForValue.build());
@@ -9865,10 +9786,10 @@ public final class Operations {
         return this;
       }
       /**
-       * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+       * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
        */
       public Builder addAllAvailableFileBlocks(
-          java.lang.Iterable<? extends ds.hdfs.Operations.FileBlocks> values) {
+          java.lang.Iterable<? extends ds.hdfs.Operations.FileBlock> values) {
         if (availableFileBlocksBuilder_ == null) {
           ensureAvailableFileBlocksIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -9880,7 +9801,7 @@ public final class Operations {
         return this;
       }
       /**
-       * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+       * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
        */
       public Builder clearAvailableFileBlocks() {
         if (availableFileBlocksBuilder_ == null) {
@@ -9893,7 +9814,7 @@ public final class Operations {
         return this;
       }
       /**
-       * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+       * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
        */
       public Builder removeAvailableFileBlocks(int index) {
         if (availableFileBlocksBuilder_ == null) {
@@ -9906,16 +9827,16 @@ public final class Operations {
         return this;
       }
       /**
-       * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+       * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
        */
-      public ds.hdfs.Operations.FileBlocks.Builder getAvailableFileBlocksBuilder(
+      public ds.hdfs.Operations.FileBlock.Builder getAvailableFileBlocksBuilder(
           int index) {
         return getAvailableFileBlocksFieldBuilder().getBuilder(index);
       }
       /**
-       * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+       * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
        */
-      public ds.hdfs.Operations.FileBlocksOrBuilder getAvailableFileBlocksOrBuilder(
+      public ds.hdfs.Operations.FileBlockOrBuilder getAvailableFileBlocksOrBuilder(
           int index) {
         if (availableFileBlocksBuilder_ == null) {
           return availableFileBlocks_.get(index);  } else {
@@ -9923,9 +9844,9 @@ public final class Operations {
         }
       }
       /**
-       * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+       * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
        */
-      public java.util.List<? extends ds.hdfs.Operations.FileBlocksOrBuilder> 
+      public java.util.List<? extends ds.hdfs.Operations.FileBlockOrBuilder> 
            getAvailableFileBlocksOrBuilderList() {
         if (availableFileBlocksBuilder_ != null) {
           return availableFileBlocksBuilder_.getMessageOrBuilderList();
@@ -9934,33 +9855,33 @@ public final class Operations {
         }
       }
       /**
-       * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+       * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
        */
-      public ds.hdfs.Operations.FileBlocks.Builder addAvailableFileBlocksBuilder() {
+      public ds.hdfs.Operations.FileBlock.Builder addAvailableFileBlocksBuilder() {
         return getAvailableFileBlocksFieldBuilder().addBuilder(
-            ds.hdfs.Operations.FileBlocks.getDefaultInstance());
+            ds.hdfs.Operations.FileBlock.getDefaultInstance());
       }
       /**
-       * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+       * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
        */
-      public ds.hdfs.Operations.FileBlocks.Builder addAvailableFileBlocksBuilder(
+      public ds.hdfs.Operations.FileBlock.Builder addAvailableFileBlocksBuilder(
           int index) {
         return getAvailableFileBlocksFieldBuilder().addBuilder(
-            index, ds.hdfs.Operations.FileBlocks.getDefaultInstance());
+            index, ds.hdfs.Operations.FileBlock.getDefaultInstance());
       }
       /**
-       * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+       * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
        */
-      public java.util.List<ds.hdfs.Operations.FileBlocks.Builder> 
+      public java.util.List<ds.hdfs.Operations.FileBlock.Builder> 
            getAvailableFileBlocksBuilderList() {
         return getAvailableFileBlocksFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          ds.hdfs.Operations.FileBlocks, ds.hdfs.Operations.FileBlocks.Builder, ds.hdfs.Operations.FileBlocksOrBuilder> 
+          ds.hdfs.Operations.FileBlock, ds.hdfs.Operations.FileBlock.Builder, ds.hdfs.Operations.FileBlockOrBuilder> 
           getAvailableFileBlocksFieldBuilder() {
         if (availableFileBlocksBuilder_ == null) {
           availableFileBlocksBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-              ds.hdfs.Operations.FileBlocks, ds.hdfs.Operations.FileBlocks.Builder, ds.hdfs.Operations.FileBlocksOrBuilder>(
+              ds.hdfs.Operations.FileBlock, ds.hdfs.Operations.FileBlock.Builder, ds.hdfs.Operations.FileBlockOrBuilder>(
                   availableFileBlocks_,
                   ((bitField0_ & 0x00000002) != 0),
                   getParentForChildren(),
@@ -10038,27 +9959,27 @@ public final class Operations {
     ds.hdfs.Operations.StatusCode getStatus();
 
     /**
-     * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+     * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
      */
-    java.util.List<ds.hdfs.Operations.FileBlocks> 
+    java.util.List<ds.hdfs.Operations.FileBlock> 
         getAvailableFileBlocksList();
     /**
-     * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+     * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
      */
-    ds.hdfs.Operations.FileBlocks getAvailableFileBlocks(int index);
+    ds.hdfs.Operations.FileBlock getAvailableFileBlocks(int index);
     /**
-     * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+     * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
      */
     int getAvailableFileBlocksCount();
     /**
-     * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+     * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
      */
-    java.util.List<? extends ds.hdfs.Operations.FileBlocksOrBuilder> 
+    java.util.List<? extends ds.hdfs.Operations.FileBlockOrBuilder> 
         getAvailableFileBlocksOrBuilderList();
     /**
-     * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+     * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
      */
-    ds.hdfs.Operations.FileBlocksOrBuilder getAvailableFileBlocksOrBuilder(
+    ds.hdfs.Operations.FileBlockOrBuilder getAvailableFileBlocksOrBuilder(
         int index);
   }
   /**
@@ -10123,11 +10044,11 @@ public final class Operations {
             }
             case 18: {
               if (!((mutable_bitField0_ & 0x00000002) != 0)) {
-                availableFileBlocks_ = new java.util.ArrayList<ds.hdfs.Operations.FileBlocks>();
+                availableFileBlocks_ = new java.util.ArrayList<ds.hdfs.Operations.FileBlock>();
                 mutable_bitField0_ |= 0x00000002;
               }
               availableFileBlocks_.add(
-                  input.readMessage(ds.hdfs.Operations.FileBlocks.PARSER, extensionRegistry));
+                  input.readMessage(ds.hdfs.Operations.FileBlock.PARSER, extensionRegistry));
               break;
             }
             default: {
@@ -10186,36 +10107,36 @@ public final class Operations {
     }
 
     public static final int AVAILABLEFILEBLOCKS_FIELD_NUMBER = 2;
-    private java.util.List<ds.hdfs.Operations.FileBlocks> availableFileBlocks_;
+    private java.util.List<ds.hdfs.Operations.FileBlock> availableFileBlocks_;
     /**
-     * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+     * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
      */
-    public java.util.List<ds.hdfs.Operations.FileBlocks> getAvailableFileBlocksList() {
+    public java.util.List<ds.hdfs.Operations.FileBlock> getAvailableFileBlocksList() {
       return availableFileBlocks_;
     }
     /**
-     * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+     * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
      */
-    public java.util.List<? extends ds.hdfs.Operations.FileBlocksOrBuilder> 
+    public java.util.List<? extends ds.hdfs.Operations.FileBlockOrBuilder> 
         getAvailableFileBlocksOrBuilderList() {
       return availableFileBlocks_;
     }
     /**
-     * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+     * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
      */
     public int getAvailableFileBlocksCount() {
       return availableFileBlocks_.size();
     }
     /**
-     * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+     * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
      */
-    public ds.hdfs.Operations.FileBlocks getAvailableFileBlocks(int index) {
+    public ds.hdfs.Operations.FileBlock getAvailableFileBlocks(int index) {
       return availableFileBlocks_.get(index);
     }
     /**
-     * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+     * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
      */
-    public ds.hdfs.Operations.FileBlocksOrBuilder getAvailableFileBlocksOrBuilder(
+    public ds.hdfs.Operations.FileBlockOrBuilder getAvailableFileBlocksOrBuilder(
         int index) {
       return availableFileBlocks_.get(index);
     }
@@ -10648,22 +10569,22 @@ public final class Operations {
         return this;
       }
 
-      private java.util.List<ds.hdfs.Operations.FileBlocks> availableFileBlocks_ =
+      private java.util.List<ds.hdfs.Operations.FileBlock> availableFileBlocks_ =
         java.util.Collections.emptyList();
       private void ensureAvailableFileBlocksIsMutable() {
         if (!((bitField0_ & 0x00000002) != 0)) {
-          availableFileBlocks_ = new java.util.ArrayList<ds.hdfs.Operations.FileBlocks>(availableFileBlocks_);
+          availableFileBlocks_ = new java.util.ArrayList<ds.hdfs.Operations.FileBlock>(availableFileBlocks_);
           bitField0_ |= 0x00000002;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          ds.hdfs.Operations.FileBlocks, ds.hdfs.Operations.FileBlocks.Builder, ds.hdfs.Operations.FileBlocksOrBuilder> availableFileBlocksBuilder_;
+          ds.hdfs.Operations.FileBlock, ds.hdfs.Operations.FileBlock.Builder, ds.hdfs.Operations.FileBlockOrBuilder> availableFileBlocksBuilder_;
 
       /**
-       * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+       * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
        */
-      public java.util.List<ds.hdfs.Operations.FileBlocks> getAvailableFileBlocksList() {
+      public java.util.List<ds.hdfs.Operations.FileBlock> getAvailableFileBlocksList() {
         if (availableFileBlocksBuilder_ == null) {
           return java.util.Collections.unmodifiableList(availableFileBlocks_);
         } else {
@@ -10671,7 +10592,7 @@ public final class Operations {
         }
       }
       /**
-       * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+       * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
        */
       public int getAvailableFileBlocksCount() {
         if (availableFileBlocksBuilder_ == null) {
@@ -10681,9 +10602,9 @@ public final class Operations {
         }
       }
       /**
-       * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+       * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
        */
-      public ds.hdfs.Operations.FileBlocks getAvailableFileBlocks(int index) {
+      public ds.hdfs.Operations.FileBlock getAvailableFileBlocks(int index) {
         if (availableFileBlocksBuilder_ == null) {
           return availableFileBlocks_.get(index);
         } else {
@@ -10691,10 +10612,10 @@ public final class Operations {
         }
       }
       /**
-       * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+       * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
        */
       public Builder setAvailableFileBlocks(
-          int index, ds.hdfs.Operations.FileBlocks value) {
+          int index, ds.hdfs.Operations.FileBlock value) {
         if (availableFileBlocksBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -10708,10 +10629,10 @@ public final class Operations {
         return this;
       }
       /**
-       * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+       * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
        */
       public Builder setAvailableFileBlocks(
-          int index, ds.hdfs.Operations.FileBlocks.Builder builderForValue) {
+          int index, ds.hdfs.Operations.FileBlock.Builder builderForValue) {
         if (availableFileBlocksBuilder_ == null) {
           ensureAvailableFileBlocksIsMutable();
           availableFileBlocks_.set(index, builderForValue.build());
@@ -10722,9 +10643,9 @@ public final class Operations {
         return this;
       }
       /**
-       * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+       * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
        */
-      public Builder addAvailableFileBlocks(ds.hdfs.Operations.FileBlocks value) {
+      public Builder addAvailableFileBlocks(ds.hdfs.Operations.FileBlock value) {
         if (availableFileBlocksBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -10738,10 +10659,10 @@ public final class Operations {
         return this;
       }
       /**
-       * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+       * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
        */
       public Builder addAvailableFileBlocks(
-          int index, ds.hdfs.Operations.FileBlocks value) {
+          int index, ds.hdfs.Operations.FileBlock value) {
         if (availableFileBlocksBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -10755,10 +10676,10 @@ public final class Operations {
         return this;
       }
       /**
-       * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+       * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
        */
       public Builder addAvailableFileBlocks(
-          ds.hdfs.Operations.FileBlocks.Builder builderForValue) {
+          ds.hdfs.Operations.FileBlock.Builder builderForValue) {
         if (availableFileBlocksBuilder_ == null) {
           ensureAvailableFileBlocksIsMutable();
           availableFileBlocks_.add(builderForValue.build());
@@ -10769,10 +10690,10 @@ public final class Operations {
         return this;
       }
       /**
-       * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+       * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
        */
       public Builder addAvailableFileBlocks(
-          int index, ds.hdfs.Operations.FileBlocks.Builder builderForValue) {
+          int index, ds.hdfs.Operations.FileBlock.Builder builderForValue) {
         if (availableFileBlocksBuilder_ == null) {
           ensureAvailableFileBlocksIsMutable();
           availableFileBlocks_.add(index, builderForValue.build());
@@ -10783,10 +10704,10 @@ public final class Operations {
         return this;
       }
       /**
-       * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+       * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
        */
       public Builder addAllAvailableFileBlocks(
-          java.lang.Iterable<? extends ds.hdfs.Operations.FileBlocks> values) {
+          java.lang.Iterable<? extends ds.hdfs.Operations.FileBlock> values) {
         if (availableFileBlocksBuilder_ == null) {
           ensureAvailableFileBlocksIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -10798,7 +10719,7 @@ public final class Operations {
         return this;
       }
       /**
-       * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+       * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
        */
       public Builder clearAvailableFileBlocks() {
         if (availableFileBlocksBuilder_ == null) {
@@ -10811,7 +10732,7 @@ public final class Operations {
         return this;
       }
       /**
-       * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+       * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
        */
       public Builder removeAvailableFileBlocks(int index) {
         if (availableFileBlocksBuilder_ == null) {
@@ -10824,16 +10745,16 @@ public final class Operations {
         return this;
       }
       /**
-       * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+       * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
        */
-      public ds.hdfs.Operations.FileBlocks.Builder getAvailableFileBlocksBuilder(
+      public ds.hdfs.Operations.FileBlock.Builder getAvailableFileBlocksBuilder(
           int index) {
         return getAvailableFileBlocksFieldBuilder().getBuilder(index);
       }
       /**
-       * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+       * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
        */
-      public ds.hdfs.Operations.FileBlocksOrBuilder getAvailableFileBlocksOrBuilder(
+      public ds.hdfs.Operations.FileBlockOrBuilder getAvailableFileBlocksOrBuilder(
           int index) {
         if (availableFileBlocksBuilder_ == null) {
           return availableFileBlocks_.get(index);  } else {
@@ -10841,9 +10762,9 @@ public final class Operations {
         }
       }
       /**
-       * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+       * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
        */
-      public java.util.List<? extends ds.hdfs.Operations.FileBlocksOrBuilder> 
+      public java.util.List<? extends ds.hdfs.Operations.FileBlockOrBuilder> 
            getAvailableFileBlocksOrBuilderList() {
         if (availableFileBlocksBuilder_ != null) {
           return availableFileBlocksBuilder_.getMessageOrBuilderList();
@@ -10852,33 +10773,33 @@ public final class Operations {
         }
       }
       /**
-       * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+       * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
        */
-      public ds.hdfs.Operations.FileBlocks.Builder addAvailableFileBlocksBuilder() {
+      public ds.hdfs.Operations.FileBlock.Builder addAvailableFileBlocksBuilder() {
         return getAvailableFileBlocksFieldBuilder().addBuilder(
-            ds.hdfs.Operations.FileBlocks.getDefaultInstance());
+            ds.hdfs.Operations.FileBlock.getDefaultInstance());
       }
       /**
-       * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+       * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
        */
-      public ds.hdfs.Operations.FileBlocks.Builder addAvailableFileBlocksBuilder(
+      public ds.hdfs.Operations.FileBlock.Builder addAvailableFileBlocksBuilder(
           int index) {
         return getAvailableFileBlocksFieldBuilder().addBuilder(
-            index, ds.hdfs.Operations.FileBlocks.getDefaultInstance());
+            index, ds.hdfs.Operations.FileBlock.getDefaultInstance());
       }
       /**
-       * <code>repeated .hdfs.FileBlocks availableFileBlocks = 2;</code>
+       * <code>repeated .hdfs.FileBlock availableFileBlocks = 2;</code>
        */
-      public java.util.List<ds.hdfs.Operations.FileBlocks.Builder> 
+      public java.util.List<ds.hdfs.Operations.FileBlock.Builder> 
            getAvailableFileBlocksBuilderList() {
         return getAvailableFileBlocksFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          ds.hdfs.Operations.FileBlocks, ds.hdfs.Operations.FileBlocks.Builder, ds.hdfs.Operations.FileBlocksOrBuilder> 
+          ds.hdfs.Operations.FileBlock, ds.hdfs.Operations.FileBlock.Builder, ds.hdfs.Operations.FileBlockOrBuilder> 
           getAvailableFileBlocksFieldBuilder() {
         if (availableFileBlocksBuilder_ == null) {
           availableFileBlocksBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-              ds.hdfs.Operations.FileBlocks, ds.hdfs.Operations.FileBlocks.Builder, ds.hdfs.Operations.FileBlocksOrBuilder>(
+              ds.hdfs.Operations.FileBlock, ds.hdfs.Operations.FileBlock.Builder, ds.hdfs.Operations.FileBlockOrBuilder>(
                   availableFileBlocks_,
                   ((bitField0_ & 0x00000002) != 0),
                   getParentForChildren(),
@@ -10991,10 +10912,10 @@ public final class Operations {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_hdfs_ListResponse_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_hdfs_FileBlocks_descriptor;
+    internal_static_hdfs_FileBlock_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_hdfs_FileBlocks_fieldAccessorTable;
+      internal_static_hdfs_FileBlock_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_hdfs_Heartbeat_descriptor;
   private static final 
@@ -11032,17 +10953,17 @@ public final class Operations {
       "(\0162\020.hdfs.StatusCode\022\035\n\005nodes\030\002 \003(\0132\016.hd" +
       "fs.DataNode\"C\n\014ListResponse\022 \n\006status\030\001 " +
       "\002(\0162\020.hdfs.StatusCode\022\021\n\tfilenames\030\002 \003(\t" +
-      "\"2\n\nFileBlocks\022\020\n\010filename\030\001 \002(\t\022\022\n\nfile" +
-      "Blocks\030\002 \003(\003\"X\n\tHeartbeat\022\034\n\004node\030\001 \002(\0132" +
-      "\016.hdfs.DataNode\022-\n\023availableFileBlocks\030\002" +
-      " \003(\0132\020.hdfs.FileBlocks\"f\n\023BlockReportRes" +
-      "ponse\022 \n\006status\030\001 \002(\0162\020.hdfs.StatusCode\022" +
-      "-\n\023availableFileBlocks\030\002 \003(\0132\020.hdfs.File" +
-      "Blocks*k\n\nStatusCode\022\006\n\002OK\020\001\022\013\n\007E_UNKWN\020" +
-      "\002\022\013\n\007E_NOENT\020\003\022\013\n\007E_NOBLK\020\004\022\013\n\007E_EXIST\020\005" +
-      "\022\010\n\004E_IO\020\006\022\013\n\007E_INVAL\020\007\022\n\n\006E_BUSY\020\010*\037\n\010F" +
-      "ileMode\022\010\n\004READ\020\001\022\t\n\005WRITE\020\002B\025\n\007ds.hdfsB" +
-      "\nOperations"
+      "\"0\n\tFileBlock\022\020\n\010filename\030\001 \002(\t\022\021\n\tfileB" +
+      "lock\030\002 \002(\003\"W\n\tHeartbeat\022\034\n\004node\030\001 \002(\0132\016." +
+      "hdfs.DataNode\022,\n\023availableFileBlocks\030\002 \003" +
+      "(\0132\017.hdfs.FileBlock\"e\n\023BlockReportRespon" +
+      "se\022 \n\006status\030\001 \002(\0162\020.hdfs.StatusCode\022,\n\023" +
+      "availableFileBlocks\030\002 \003(\0132\017.hdfs.FileBlo" +
+      "ck*k\n\nStatusCode\022\006\n\002OK\020\001\022\013\n\007E_UNKWN\020\002\022\013\n" +
+      "\007E_NOENT\020\003\022\013\n\007E_NOBLK\020\004\022\013\n\007E_EXIST\020\005\022\010\n\004" +
+      "E_IO\020\006\022\013\n\007E_INVAL\020\007\022\n\n\006E_BUSY\020\010*\037\n\010FileM" +
+      "ode\022\010\n\004READ\020\001\022\t\n\005WRITE\020\002B\025\n\007ds.hdfsB\nOpe" +
+      "rations"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -11108,12 +11029,12 @@ public final class Operations {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_hdfs_ListResponse_descriptor,
         new java.lang.String[] { "Status", "Filenames", });
-    internal_static_hdfs_FileBlocks_descriptor =
+    internal_static_hdfs_FileBlock_descriptor =
       getDescriptor().getMessageTypes().get(10);
-    internal_static_hdfs_FileBlocks_fieldAccessorTable = new
+    internal_static_hdfs_FileBlock_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_hdfs_FileBlocks_descriptor,
-        new java.lang.String[] { "Filename", "FileBlocks", });
+        internal_static_hdfs_FileBlock_descriptor,
+        new java.lang.String[] { "Filename", "FileBlock", });
     internal_static_hdfs_Heartbeat_descriptor =
       getDescriptor().getMessageTypes().get(11);
     internal_static_hdfs_Heartbeat_fieldAccessorTable = new
