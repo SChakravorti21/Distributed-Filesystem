@@ -4687,6 +4687,17 @@ public final class Operations {
      */
     ds.hdfs.Operations.DataNodeOrBuilder getNodesOrBuilder(
         int index);
+
+    /**
+     * <code>required int32 replicationFactor = 3;</code>
+     * @return Whether the replicationFactor field is set.
+     */
+    boolean hasReplicationFactor();
+    /**
+     * <code>required int32 replicationFactor = 3;</code>
+     * @return The replicationFactor.
+     */
+    int getReplicationFactor();
   }
   /**
    * Protobuf type {@code hdfs.AssignBlockResponse}
@@ -4755,6 +4766,11 @@ public final class Operations {
               }
               nodes_.add(
                   input.readMessage(ds.hdfs.Operations.DataNode.PARSER, extensionRegistry));
+              break;
+            }
+            case 24: {
+              bitField0_ |= 0x00000002;
+              replicationFactor_ = input.readInt32();
               break;
             }
             default: {
@@ -4872,6 +4888,23 @@ public final class Operations {
       return nodes_.get(index);
     }
 
+    public static final int REPLICATIONFACTOR_FIELD_NUMBER = 3;
+    private int replicationFactor_;
+    /**
+     * <code>required int32 replicationFactor = 3;</code>
+     * @return Whether the replicationFactor field is set.
+     */
+    public boolean hasReplicationFactor() {
+      return ((bitField0_ & 0x00000002) != 0);
+    }
+    /**
+     * <code>required int32 replicationFactor = 3;</code>
+     * @return The replicationFactor.
+     */
+    public int getReplicationFactor() {
+      return replicationFactor_;
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -4880,6 +4913,10 @@ public final class Operations {
       if (isInitialized == 0) return false;
 
       if (!hasStatus()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasReplicationFactor()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -4902,6 +4939,9 @@ public final class Operations {
       for (int i = 0; i < nodes_.size(); i++) {
         output.writeMessage(2, nodes_.get(i));
       }
+      if (((bitField0_ & 0x00000002) != 0)) {
+        output.writeInt32(3, replicationFactor_);
+      }
       unknownFields.writeTo(output);
     }
 
@@ -4918,6 +4958,10 @@ public final class Operations {
       for (int i = 0; i < nodes_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(2, nodes_.get(i));
+      }
+      if (((bitField0_ & 0x00000002) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(3, replicationFactor_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -4940,6 +4984,11 @@ public final class Operations {
       }
       if (!getNodesList()
           .equals(other.getNodesList())) return false;
+      if (hasReplicationFactor() != other.hasReplicationFactor()) return false;
+      if (hasReplicationFactor()) {
+        if (getReplicationFactor()
+            != other.getReplicationFactor()) return false;
+      }
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
@@ -4958,6 +5007,10 @@ public final class Operations {
       if (getNodesCount() > 0) {
         hash = (37 * hash) + NODES_FIELD_NUMBER;
         hash = (53 * hash) + getNodesList().hashCode();
+      }
+      if (hasReplicationFactor()) {
+        hash = (37 * hash) + REPLICATIONFACTOR_FIELD_NUMBER;
+        hash = (53 * hash) + getReplicationFactor();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -5101,6 +5154,8 @@ public final class Operations {
         } else {
           nodesBuilder_.clear();
         }
+        replicationFactor_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000004);
         return this;
       }
 
@@ -5141,6 +5196,10 @@ public final class Operations {
           result.nodes_ = nodes_;
         } else {
           result.nodes_ = nodesBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000004) != 0)) {
+          result.replicationFactor_ = replicationFactor_;
+          to_bitField0_ |= 0x00000002;
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -5220,6 +5279,9 @@ public final class Operations {
             }
           }
         }
+        if (other.hasReplicationFactor()) {
+          setReplicationFactor(other.getReplicationFactor());
+        }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
@@ -5228,6 +5290,9 @@ public final class Operations {
       @java.lang.Override
       public final boolean isInitialized() {
         if (!hasStatus()) {
+          return false;
+        }
+        if (!hasReplicationFactor()) {
           return false;
         }
         for (int i = 0; i < getNodesCount(); i++) {
@@ -5628,6 +5693,43 @@ public final class Operations {
           nodes_ = null;
         }
         return nodesBuilder_;
+      }
+
+      private int replicationFactor_ ;
+      /**
+       * <code>required int32 replicationFactor = 3;</code>
+       * @return Whether the replicationFactor field is set.
+       */
+      public boolean hasReplicationFactor() {
+        return ((bitField0_ & 0x00000004) != 0);
+      }
+      /**
+       * <code>required int32 replicationFactor = 3;</code>
+       * @return The replicationFactor.
+       */
+      public int getReplicationFactor() {
+        return replicationFactor_;
+      }
+      /**
+       * <code>required int32 replicationFactor = 3;</code>
+       * @param value The replicationFactor to set.
+       * @return This builder for chaining.
+       */
+      public Builder setReplicationFactor(int value) {
+        bitField0_ |= 0x00000004;
+        replicationFactor_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required int32 replicationFactor = 3;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearReplicationFactor() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        replicationFactor_ = 0;
+        onChanged();
+        return this;
       }
       @java.lang.Override
       public final Builder setUnknownFields(
@@ -10945,25 +11047,25 @@ public final class Operations {
       "leMode\"5\n\021OpenCloseResponse\022 \n\006status\030\001 " +
       "\002(\0162\020.hdfs.StatusCode\";\n\022AssignBlockRequ" +
       "est\022\020\n\010filename\030\001 \002(\t\022\023\n\013blockNumber\030\002 \002" +
-      "(\003\"V\n\023AssignBlockResponse\022 \n\006status\030\001 \002(" +
+      "(\003\"q\n\023AssignBlockResponse\022 \n\006status\030\001 \002(" +
       "\0162\020.hdfs.StatusCode\022\035\n\005nodes\030\002 \003(\0132\016.hdf" +
-      "s.DataNode\"A\n\030GetBlockLocationsRequest\022\020" +
-      "\n\010filename\030\001 \002(\t\022\023\n\013blockNumber\030\002 \002(\003\"\\\n" +
-      "\031GetBlockLocationsResponse\022 \n\006status\030\001 \002" +
-      "(\0162\020.hdfs.StatusCode\022\035\n\005nodes\030\002 \003(\0132\016.hd" +
-      "fs.DataNode\"C\n\014ListResponse\022 \n\006status\030\001 " +
-      "\002(\0162\020.hdfs.StatusCode\022\021\n\tfilenames\030\002 \003(\t" +
-      "\"0\n\tFileBlock\022\020\n\010filename\030\001 \002(\t\022\021\n\tfileB" +
-      "lock\030\002 \002(\003\"W\n\tHeartbeat\022\034\n\004node\030\001 \002(\0132\016." +
-      "hdfs.DataNode\022,\n\023availableFileBlocks\030\002 \003" +
-      "(\0132\017.hdfs.FileBlock\"e\n\023BlockReportRespon" +
-      "se\022 \n\006status\030\001 \002(\0162\020.hdfs.StatusCode\022,\n\023" +
-      "availableFileBlocks\030\002 \003(\0132\017.hdfs.FileBlo" +
-      "ck*k\n\nStatusCode\022\006\n\002OK\020\001\022\013\n\007E_UNKWN\020\002\022\013\n" +
-      "\007E_NOENT\020\003\022\013\n\007E_NOBLK\020\004\022\013\n\007E_EXIST\020\005\022\010\n\004" +
-      "E_IO\020\006\022\013\n\007E_INVAL\020\007\022\n\n\006E_BUSY\020\010*\037\n\010FileM" +
-      "ode\022\010\n\004READ\020\001\022\t\n\005WRITE\020\002B\025\n\007ds.hdfsB\nOpe" +
-      "rations"
+      "s.DataNode\022\031\n\021replicationFactor\030\003 \002(\005\"A\n" +
+      "\030GetBlockLocationsRequest\022\020\n\010filename\030\001 " +
+      "\002(\t\022\023\n\013blockNumber\030\002 \002(\003\"\\\n\031GetBlockLoca" +
+      "tionsResponse\022 \n\006status\030\001 \002(\0162\020.hdfs.Sta" +
+      "tusCode\022\035\n\005nodes\030\002 \003(\0132\016.hdfs.DataNode\"C" +
+      "\n\014ListResponse\022 \n\006status\030\001 \002(\0162\020.hdfs.St" +
+      "atusCode\022\021\n\tfilenames\030\002 \003(\t\"0\n\tFileBlock" +
+      "\022\020\n\010filename\030\001 \002(\t\022\021\n\tfileBlock\030\002 \002(\003\"W\n" +
+      "\tHeartbeat\022\034\n\004node\030\001 \002(\0132\016.hdfs.DataNode" +
+      "\022,\n\023availableFileBlocks\030\002 \003(\0132\017.hdfs.Fil" +
+      "eBlock\"e\n\023BlockReportResponse\022 \n\006status\030" +
+      "\001 \002(\0162\020.hdfs.StatusCode\022,\n\023availableFile" +
+      "Blocks\030\002 \003(\0132\017.hdfs.FileBlock*k\n\nStatusC" +
+      "ode\022\006\n\002OK\020\001\022\013\n\007E_UNKWN\020\002\022\013\n\007E_NOENT\020\003\022\013\n" +
+      "\007E_NOBLK\020\004\022\013\n\007E_EXIST\020\005\022\010\n\004E_IO\020\006\022\013\n\007E_I" +
+      "NVAL\020\007\022\n\n\006E_BUSY\020\010*\037\n\010FileMode\022\010\n\004READ\020\001" +
+      "\022\t\n\005WRITE\020\002B\025\n\007ds.hdfsB\nOperations"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -11010,7 +11112,7 @@ public final class Operations {
     internal_static_hdfs_AssignBlockResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_hdfs_AssignBlockResponse_descriptor,
-        new java.lang.String[] { "Status", "Nodes", });
+        new java.lang.String[] { "Status", "Nodes", "ReplicationFactor", });
     internal_static_hdfs_GetBlockLocationsRequest_descriptor =
       getDescriptor().getMessageTypes().get(7);
     internal_static_hdfs_GetBlockLocationsRequest_fieldAccessorTable = new

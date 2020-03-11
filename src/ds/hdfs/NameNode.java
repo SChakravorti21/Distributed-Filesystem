@@ -224,7 +224,6 @@ public class NameNode implements INameNode {
             Collections.shuffle(nodes);
 
             List<Operations.DataNode> assignedNodes = nodes
-                    .subList(0, replicationFactor)
                     .stream()
                     .map(NameNode::convertDataNodeToProto)
                     .collect(Collectors.toList());
@@ -232,6 +231,7 @@ public class NameNode implements INameNode {
             return Operations.AssignBlockResponse
                     .newBuilder()
                     .setStatus(Operations.StatusCode.OK)
+                    .setReplicationFactor(replicationFactor)
                     .addAllNodes(assignedNodes)
                     .build()
                     .toByteArray();

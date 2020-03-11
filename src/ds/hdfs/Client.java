@@ -61,6 +61,15 @@ public class Client
 //            System.out.println("File not found !!!");
 //            return;
 //        }
+        /*
+            [Node4, Node2, Node3, Node1], replication factor = 2
+            [success, failure, null, null]
+         */
+
+//        List<String> list;
+//        for(int i = 0; i < list.size() * 3; i++) {
+//            int nodeIndex = i % list.size();
+//        }
     }
 
     public void GetFile(String FileName)

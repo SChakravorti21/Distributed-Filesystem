@@ -58,6 +58,7 @@ message AssignBlockResponse {
     // The DataNodes that the client can
     // request to store the block's contents
     repeated DataNode nodes = 2;
+    required int32 replicationFactor = 3;
 }
 
 message GetBlockLocationsRequest {
