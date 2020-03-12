@@ -58,7 +58,7 @@ public class DataNode implements IDataNode {
     public static void main(String[] args) {
         try {
             // Get NameNode's configuration
-            Map<String, String> config = parseConfigFile(args[0]);
+            Map<String, String> config = Utils.parseConfigFile(args[0]);
             int id = Integer.parseInt(config.get("ID"));
             String ip = config.get("IP");
             int port = Integer.parseInt(config.get("PORT"));
@@ -93,14 +93,6 @@ public class DataNode implements IDataNode {
         }
     }
 
-    private static Map<String, String> parseConfigFile(String filename) throws IOException {
-        return Files.lines(Paths.get(filename))
-                .map(line -> line.split("="))
-                .collect(Collectors.toMap(
-                        line -> line[0],
-                        line -> line[1]
-                ));
-    }
 
     private static Registry bindStub(String nodeName, IDataNode stub)
             throws AlreadyBoundException, RemoteException {
@@ -116,7 +108,7 @@ public class DataNode implements IDataNode {
     }
 
     private static INameNode connectNameNode() throws IOException, NotBoundException {
-        String registryHost = parseConfigFile("src/nn_config.txt").get("IP");
+        String registryHost = Utils.parseConfigFile("src/nn_config.txt").get("IP");
         Registry serverRegistry = LocateRegistry.getRegistry(registryHost, NameNode.REGISTRY_PORT);
         return (INameNode) serverRegistry.lookup("INameNode");
     }

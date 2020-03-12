@@ -74,12 +74,7 @@ public class NameNode implements INameNode {
     public static void main(String[] args) {
         try {
             // Get NameNode's configuration
-            Map<String, String> config = Files.lines(Paths.get("src/nn_config.txt"))
-                    .map(line -> line.split("="))
-                    .collect(Collectors.toMap(
-                            line -> line[0],
-                            line -> line[1]
-                    ));
+            Map<String, String> config = Utils.parseConfigFile("src/nn_config.txt");
 
             String description = config.get("DESCRIPTION");
             String ip = config.get("IP");
