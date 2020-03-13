@@ -41,31 +41,6 @@ public class Client
     public void PutFile(String Filename) //Put File
     {
         System.out.println("Going to put file" + Filename);
-        ArrayList<byte[]> blocks = new ArrayList<byte[]>();
-
-        try {
-            // Read file in from local disk
-            Path path = Paths.get(Filename);
-            byte[] data = Files.readAllBytes(path);
-
-            // Divide file into multiple blocks
-            int fileInd = 0;
-            while (true) {
-                byte[] currBlock = new byte[blockSize];
-                int byteCount = 0;
-
-                while (byteCount < blockSize && fileInd < data.length) {
-                    currBlock[byteCount] = data[fileInd];
-                    byteCount++;
-                    fileInd++;
-                }
-                blocks.add(currBlock);
-
-                if (fileInd >= data.length) break;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
         try {
             // Call NameNode for Open File Request
@@ -88,8 +63,6 @@ public class Client
                 // Call NameNode for Assign Block Request
                 Operations.AssignBlockRequest blockRequest = Operations.AssignBlockRequest
                         .newBuilder()
-                        .setFilename(Filename)
-                        .setBlockNumber(blocks.size())
                         .build();
 
                 Operations.AssignBlockResponse blockResponse = Operations.AssignBlockResponse
@@ -120,55 +93,55 @@ public class Client
                 }
             }
 
-            // Begin writing blocks to each DataNode
-            int[] replication = new int[blocks.size()];
-            Arrays.fill(replication, replicationFactor);
-            int nodeIndex = 0;
-            int blockIndex = 0;
 
-            while (blockIndex < blocks.size()) {
-                try {
-                    Operations.ReadWriteResponse writeResponse = doReadWrite(
-                            Filename,
-                            blockIndex,
-                            ByteString.copyFrom(blocks.get(blockIndex)),
-                            Operations.FileMode.WRITE,
-                            stubList.get(nodeIndex)
-                    );
+            // Open file and put into input stream
+            try {
+                InputStream input = new FileInputStream(Filename);
+                DataInputStream dataInputStream = new DataInputStream(input);
+                int fileIndex = 0; // file offset
+                int blockIndex = 0; // block number
+                int nodeIndex = 0; // node index in list
 
-                    if(writeResponse.getStatus() != Operations.StatusCode.OK) {
-                        System.err.println(getErrorMessage(writeResponse.getStatus()));
-                    } else {
-                        replication[blockIndex]--;
-                        if (replication[blockIndex] == 0) blockIndex++;
+                while (true) {
+                    byte[] curr = new byte[blockSize];
+                    int numRead = dataInputStream.read(curr, fileIndex, blockSize); // returns bytes read (len)
+                    if (numRead <= 0) break;
+                    fileIndex += numRead;
+
+                    int replicationCount = 0;
+                    while (replicationCount < replicationFactor) {
+                        try {
+                            Operations.ReadWriteResponse writeResponse = doReadWrite(
+                                    Filename,
+                                    blockIndex,
+                                    ByteString.copyFrom(curr),
+                                    Operations.FileMode.WRITE,
+                                    stubList.get(nodeIndex)
+                            );
+
+                            if(writeResponse.getStatus() != Operations.StatusCode.OK) {
+                                System.err.println(getErrorMessage(writeResponse.getStatus()));
+                            } else {
+                                replicationCount++;
+                                blockIndex++;
+                            }
+                        } catch (RemoteException e) {
+                            // ignore
+                            String.format("Could not write to DataNode %d, continuing anyways", nodeList.get(nodeIndex).getId());
+                        }
+                        nodeIndex++;
+                        if(nodeIndex >= nodeList.size()) break;
                     }
-                } catch (RemoteException e) {
-                    // ignore
                 }
-
-                nodeIndex++;
-                nodeIndex %= nodeList.size();
+            } catch (IOException e) {
+                System.err.println("Failed to find or read file");
+                return;
             }
         } catch (InvalidProtocolBufferException e) {
             e.printStackTrace();
         }
 
-
-//        try{
-//            bis = new BufferedInputStream(new FileInputStream(File));
-//        }catch(Exception e){
-//            System.out.println("File not found !!!");
-//            return;
-//        }
-        /*
-            [Node4, Node2, Node3, Node1], replication factor = 2
-            [success, failure, null, null]
-         */
-
-//        List<String> list;
-//        for(int i = 0; i < list.size() * 3; i++) {
-//            int nodeIndex = i % list.size();
-//        }
+        System.out.println("Successfully wrote to file.");
     }
 
     public void GetFile(String FileName)
@@ -187,9 +160,6 @@ public class Client
             if(response.getStatus() != Operations.StatusCode.OK) {
                 //Error Check
             }
-
-
-
 
         } catch (RemoteException e) {
             e.printStackTrace();
