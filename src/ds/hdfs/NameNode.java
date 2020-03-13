@@ -241,10 +241,16 @@ public class NameNode implements INameNode {
 
     public byte[] list() {
         synchronized (fileLock) {
+            List<String> filenames = blockInfoList
+                    .stream()
+                    .map(block -> block.filename)
+                    .distinct()
+                    .collect(Collectors.toList());
+
             return Operations.ListResponse
                     .newBuilder()
                     .setStatus(Operations.StatusCode.OK)
-                    .addAllFilenames(fileStatuses.keySet())
+                    .addAllFilenames(filenames)
                     .build()
                     .toByteArray();
         }
