@@ -146,11 +146,11 @@ public class Client
         }
     }
 
-    public void GetFile(String filename) {
+    public void GetFile(String remoteFilename, String localFilename) {
         try {
             // Call NameNode for Open File Request
             try {
-                Operations.OpenCloseResponse response = doOpenClose(filename, Operations.FileMode.READ, true);
+                Operations.OpenCloseResponse response = doOpenClose(remoteFilename, Operations.FileMode.READ, true);
 
                 if(response.getStatus() != Operations.StatusCode.OK) {
                     System.err.println(getErrorMessage(response.getStatus()));
@@ -167,9 +167,9 @@ public class Client
             Map<Integer, IDataNode> stubs = new HashMap<>();
 
             try {
-                outputFile = new File(filename);
+                outputFile = new File(localFilename);
                 outputFile.createNewFile();
-                outputStream = new FileOutputStream(filename);
+                outputStream = new FileOutputStream(localFilename);
             } catch (IOException e) {
                 System.err.println("Failed to open local file for writing");
                 return;
@@ -182,7 +182,7 @@ public class Client
                 try {
                     byte[] locationsRequest = Operations.GetBlockLocationsRequest
                             .newBuilder()
-                            .setFilename(filename)
+                            .setFilename(remoteFilename)
                             .setBlockNumber(blockNumber)
                             .build()
                             .toByteArray();
@@ -215,7 +215,7 @@ public class Client
                         }
 
                         Operations.ReadWriteResponse readResponse = doReadWrite(
-                                filename,
+                                remoteFilename,
                                 blockNumber,
                                 null,
                                 Operations.FileMode.READ,
@@ -244,7 +244,7 @@ public class Client
             outputStream.close();
 
             try {
-                Operations.OpenCloseResponse response = doOpenClose(filename, Operations.FileMode.READ, false);
+                Operations.OpenCloseResponse response = doOpenClose(remoteFilename, Operations.FileMode.READ, false);
                 if(response.getStatus() != Operations.StatusCode.OK) {
                     System.err.println(getErrorMessage(response.getStatus()));
                     return;
@@ -254,7 +254,8 @@ public class Client
                 return;
             }
 
-            System.out.printf("Successfully read file %s\n", filename);
+            System.out.printf("Successfully read remote file (%s) to local file (%s)\n",
+                    remoteFilename, localFilename);
         } catch (InvalidProtocolBufferException e) {
             System.err.println("Protobuf error");
         } catch (IOException e) {
@@ -376,10 +377,11 @@ public class Client
             else if(Split_Commands[0].equals("get"))
             {
                 //Get file from HDFS
-                String Filename;
+                String localFilename, remoteFilename;
                 try{
-                    Filename = Split_Commands[1];
-                    Me.GetFile(Filename);
+                    remoteFilename = Split_Commands[1];
+                    localFilename = Split_Commands.length > 2 ? Split_Commands[2] : remoteFilename;
+                    Me.GetFile(remoteFilename, localFilename);
                 }catch(ArrayIndexOutOfBoundsException e){
                     System.out.println("Please type 'help' for instructions");
                     continue;
