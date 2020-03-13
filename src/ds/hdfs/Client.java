@@ -83,23 +83,24 @@ public class Client
             try {
                 InputStream input = new FileInputStream(localFilename);
                 DataInputStream dataInputStream = new DataInputStream(input);
-                int fileIndex = 0; // file offset
                 int blockIndex = 0; // block number
 
                 while (true) {
-                    int nodeIndex = 0; // node index in list
+                    int replicationCount = 0;
                     byte[] curr = new byte[blockSize];
+
                     int numRead = dataInputStream.read(curr); // returns bytes read (len)
                     if (numRead <= 0) break;
-                    fileIndex += numRead;
 
-                    int replicationCount = 0;
-                    while (replicationCount < replicationFactor) {
+                    for(int nodeIndex = 0;
+                        nodeIndex < stubList.size() && replicationCount < replicationFactor;
+                        nodeIndex++
+                    ) {
                         try {
                             Operations.ReadWriteResponse writeResponse = doReadWrite(
                                     remoteFilename,
                                     blockIndex,
-                                    ByteString.copyFrom(curr),
+                                    ByteString.copyFrom(curr, 0, numRead),
                                     Operations.FileMode.WRITE,
                                     stubList.get(nodeIndex)
                             );
@@ -112,14 +113,11 @@ public class Client
                         } catch (RemoteException e) {
                             // ignore
                         }
-
-                        nodeIndex++;
-                        if(nodeIndex >= nodeList.size()) {
-                            if (replicationCount < replicationFactor)
-                                System.err.printf("Failed to reach replication factor for block %d\n", blockIndex);
-                            break;
-                        }
                     }
+
+                    if (replicationCount < replicationFactor)
+                        System.err.printf("Failed to reach replication factor for block %d\n", blockIndex);
+
                     blockIndex++;
                 }
                 dataInputStream.close();
