@@ -144,26 +144,107 @@ public class Client
         System.out.println("Successfully wrote to file.");
     }
 
-    public void GetFile(String FileName)
+    public void GetFile(String filename)
     {
         try {
             // Call NameNode for Open File Request
-            Operations.OpenCloseRequest request = Operations.OpenCloseRequest
-                    .newBuilder()
-                    .setFilename(FileName)
-                    .setMode(Operations.FileMode.READ)
-                    .build();
+            try {
+                Operations.OpenCloseResponse response = getFileHandle(filename, Operations.FileMode.READ);
 
-            Operations.OpenCloseResponse response = Operations.OpenCloseResponse
-                    .parseFrom(nameNode.openFile(request.toByteArray()));
-
-            if(response.getStatus() != Operations.StatusCode.OK) {
-                //Error Check
+                if(response.getStatus() != Operations.StatusCode.OK) {
+                    System.err.println(getErrorMessage(response.getStatus()));
+                    return;
+                }
+            } catch (RemoteException e) {
+                System.err.println("Failed to open remote file for reading");
+                return;
             }
 
-        } catch (RemoteException e) {
-            e.printStackTrace();
+            int blockNumber = 0;
+            File outputFile;
+            FileOutputStream outputStream;
+            Map<Integer, IDataNode> stubs = new HashMap<>();
+
+            try {
+                outputFile = new File(filename);
+                outputFile.createNewFile();
+                outputStream = new FileOutputStream(filename);
+            } catch (IOException e) {
+                System.err.println("Failed to open local file for writing");
+                return;
+            }
+
+            while(true) {
+                byte[] contents = null;
+                Operations.GetBlockLocationsResponse locationsResponse;
+
+                try {
+                    byte[] locationsRequest = Operations.GetBlockLocationsRequest
+                            .newBuilder()
+                            .setFilename(filename)
+                            .setBlockNumber(blockNumber)
+                            .build()
+                            .toByteArray();
+
+                    locationsResponse = Operations.GetBlockLocationsResponse
+                            .parseFrom(nameNode.getBlockLocations(locationsRequest));
+
+                    // If we reach the end of the file, we get an E_NOBLK error
+                    if (locationsResponse.getStatus() == Operations.StatusCode.E_NOBLK) {
+                        break;
+                    } else if (locationsResponse.getStatus() != Operations.StatusCode.OK) {
+                        System.err.println(getErrorMessage(locationsResponse.getStatus()));
+                        outputFile.delete();
+                        break;
+                    }
+                } catch (RemoteException e) {
+                    System.err.println("Failed to query NameNode for block locations, aborting operation");
+                    outputFile.delete();
+                    break;
+                }
+
+                for(Operations.DataNode node : locationsResponse.getNodesList()) {
+                    try {
+                        if(!stubs.containsKey(node.getId())) {
+                            stubs.put(node.getId(), connectDataNode(
+                                    node.getIp(),
+                                    node.getPort(),
+                                    "" + node.getId()
+                            ));
+                        }
+
+                        Operations.ReadWriteResponse readResponse = doReadWrite(
+                                filename,
+                                blockNumber,
+                                null,
+                                Operations.FileMode.READ,
+                                stubs.get(node.getId())
+                        );
+
+                        if(readResponse.getStatus() == Operations.StatusCode.OK) {
+                            contents = readResponse.getContents().toByteArray();
+                            break;  // only need to successfully read from one node
+                        }
+                    } catch (RemoteException | NotBoundException e) {
+                        // ignore
+                    }
+                }
+
+                if(contents == null) {
+                    System.err.printf("Failed to read block %d from any node, aborting operation\n", blockNumber);
+                    outputFile.delete();
+                    break;
+                }
+
+                outputStream.write(contents);
+                blockNumber++;
+            }
+
+            outputStream.close();
+            System.out.printf("Successfully read file %s\n", filename);
         } catch (InvalidProtocolBufferException e) {
+            System.err.println("Protobuf error");
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
