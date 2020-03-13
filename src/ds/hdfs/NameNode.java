@@ -188,27 +188,23 @@ public class NameNode implements INameNode {
 
         synchronized (nodeLock) {
             synchronized (fileLock) {
-                // First check if there are any nodes at all storing
-                // this block
-                Stream<DataNodeBlockInfo> filteredBlockInfoList = blockInfoList
-                        .stream()
-                        .filter(blockInfo -> blockInfo.filename.equals(request.getFilename())
-                                && blockInfo.blockNumber == request.getBlockNumber());
-
-                // If no such nodes are found, we won't be able to
-                // tell the client which DataNodes to contact anyways
-                if (filteredBlockInfoList.count() == 0) {
-                    return createGetBlockLocationsResponse(Operations.StatusCode.E_NOBLK);
-                }
-
                 // For the client's convenience, also filter
                 // by active nodes so that client has higher likelihood
                 // of contacting a live DataNode.
-                List<Operations.DataNode> availableNodes = filteredBlockInfoList
+                List<Operations.DataNode> availableNodes = blockInfoList
+                        .stream()
+                        .filter(blockInfo -> blockInfo.filename.equals(request.getFilename())
+                                && blockInfo.blockNumber == request.getBlockNumber())
                         .map(blockInfo -> blockInfo.node)
                         .filter(node -> activeNodes.containsKey(node.id))
                         .map(NameNode::convertDataNodeToProto)
                         .collect(Collectors.toList());
+
+                // If no such nodes are found, we won't be able to
+                // tell the client which DataNodes to contact anyways
+                if (availableNodes.size() == 0) {
+                    return createGetBlockLocationsResponse(Operations.StatusCode.E_NOBLK);
+                }
 
                 return createGetBlockLocationsResponse(
                         Operations.StatusCode.OK,
