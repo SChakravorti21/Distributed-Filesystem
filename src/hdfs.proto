@@ -49,8 +49,6 @@ message OpenCloseResponse {
 }
 
 message AssignBlockRequest {
-    required string filename = 1;
-    required int64 blockNumber = 2;
 }
 
 message AssignBlockResponse {

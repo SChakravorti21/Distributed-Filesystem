@@ -28,7 +28,7 @@ public class Client
         try {
             Map<String, String> config = Utils.parseConfigFile("src/cn_config.txt");
             blockSize = Integer.parseInt(config.get("BLOCK_SIZE"));
-            nameNode = connectNameNode();
+            nameNode = Utils.connectNameNode();
         } catch (IOException e) {
             e.printStackTrace();
         } catch (NotBoundException e) {
@@ -69,18 +69,22 @@ public class Client
 
         try {
             // Call NameNode for Open File Request
-            Operations.OpenCloseRequest request = Operations.OpenCloseRequest
-                    .newBuilder()
-                    .setFilename(Filename)
-                    .setMode(Operations.FileMode.WRITE)
-                    .build();
+            try {
+                Operations.OpenCloseResponse response = getFileHandle(Filename, Operations.FileMode.WRITE);
 
-            Operations.OpenCloseResponse response = Operations.OpenCloseResponse
-                    .parseFrom(nameNode.openFile(request.toByteArray()));
-            Operations.StatusCode status = response.getStatus();
+                if(response.getStatus() != Operations.StatusCode.OK) {
+                    System.err.println(getErrorMessage(response.getStatus()));
+                    return;
+                }
+            } catch (RemoteException e) {
+                System.err.println("Failed to open file to read/write");
+                return;
+            }
 
-            if (status == Operations.StatusCode.OK) {
+            List<Operations.DataNode> nodeList;
+            int replicationFactor;
 
+            try {
                 // Call NameNode for Assign Block Request
                 Operations.AssignBlockRequest blockRequest = Operations.AssignBlockRequest
                         .newBuilder()
@@ -91,51 +95,60 @@ public class Client
                 Operations.AssignBlockResponse blockResponse = Operations.AssignBlockResponse
                         .parseFrom(nameNode.assignBlock(blockRequest.toByteArray()));
 
-                List<Operations.DataNode> nodeList = blockResponse.getNodesList();
-                int repFactor = blockResponse.getReplicationFactor();
-
-                // Get Stubs for each individual DataNode
-                List<IDataNode> stubList = new ArrayList<IDataNode>();
-
-                for (Operations.DataNode dn : nodeList) {
-                    try {
-                        stubList.add(connectDataNode(dn.getIp(), dn.getPort(), "IDataNode"));
-                    } catch (NotBoundException e) {
-                        e.printStackTrace();
-                    }
+                if(blockResponse.getStatus() != Operations.StatusCode.OK) {
+                    System.err.println(getErrorMessage(blockResponse.getStatus()));
+                    return;
                 }
 
-                // Begin writing blocks to each DataNode
-                boolean finishedWrite = false;
-                int[] replication = new int[blocks.size()];
-                Arrays.fill(replication, repFactor);
-                int nodeIndex = 0;
-                int blockIndex = 0;
+                nodeList = blockResponse.getNodesList();
+                replicationFactor = blockResponse.getReplicationFactor();
+            } catch (RemoteException e) {
+                System.err.println("Failed assign blocks for file");
+                return;
+            }
 
-                while (blockIndex < blocks.size()) {
-                    Operations.ReadWriteRequest writeRequest = Operations.ReadWriteRequest
-                            .newBuilder()
-                            .setFilename(Filename)
-                            .setBlockNumber(blockIndex)
-                            .setContents(ByteString.copyFrom(blocks.get(blockIndex)))
-                            .build();
+            // Get Stubs for each individual DataNode
+            List<IDataNode> stubList = new ArrayList<>();
 
-                    Operations.ReadWriteResponse writeResponse = Operations.ReadWriteResponse
-                            .parseFrom(stubList.get(nodeIndex).writeBlock(writeRequest.toByteArray()));
-
-                    if(writeResponse.getStatus() != Operations.StatusCode.OK) {
-                        // Error Checking for Failed Write
-                    }
-
-                    nodeIndex++;
-                    nodeIndex %= nodeList.size();
-                    replication[blockIndex]--;
-                    if(replication[blockIndex] == 0) blockIndex++;
+            for (Operations.DataNode dn : nodeList) {
+                try {
+                    stubList.add(connectDataNode(dn.getIp(), dn.getPort(), "IDataNode"));
+                } catch (NotBoundException | RemoteException e) {
+                    System.err.println(
+                        String.format("Could not connect to DataNode %d, continuing anyways", dn.getId())
+                    );
                 }
             }
 
-        } catch (RemoteException e) {
-            e.printStackTrace();
+            // Begin writing blocks to each DataNode
+            int[] replication = new int[blocks.size()];
+            Arrays.fill(replication, replicationFactor);
+            int nodeIndex = 0;
+            int blockIndex = 0;
+
+            while (blockIndex < blocks.size()) {
+                try {
+                    Operations.ReadWriteResponse writeResponse = doReadWrite(
+                            Filename,
+                            blockIndex,
+                            ByteString.copyFrom(blocks.get(blockIndex)),
+                            Operations.FileMode.WRITE,
+                            stubList.get(nodeIndex)
+                    );
+
+                    if(writeResponse.getStatus() != Operations.StatusCode.OK) {
+                        System.err.println(getErrorMessage(writeResponse.getStatus()));
+                    } else {
+                        replication[blockIndex]--;
+                        if (replication[blockIndex] == 0) blockIndex++;
+                    }
+                } catch (RemoteException e) {
+                    // ignore
+                }
+
+                nodeIndex++;
+                nodeIndex %= nodeList.size();
+            }
         } catch (InvalidProtocolBufferException e) {
             e.printStackTrace();
         }
@@ -190,15 +203,64 @@ public class Client
 
     }
 
-    private static INameNode connectNameNode() throws IOException, NotBoundException {
-        String registryHost = Utils.parseConfigFile("src/nn_config.txt").get("IP");
-        Registry serverRegistry = LocateRegistry.getRegistry(registryHost, NameNode.REGISTRY_PORT);
-        return (INameNode) serverRegistry.lookup("INameNode");
-    }
-
     private static IDataNode connectDataNode(String ip, int port, String name) throws RemoteException, NotBoundException {
         Registry serverRegistry = LocateRegistry.getRegistry(ip, port);
         return (IDataNode) serverRegistry.lookup(name);
+    }
+
+    private Operations.OpenCloseResponse getFileHandle(String filename, Operations.FileMode mode)
+            throws InvalidProtocolBufferException, RemoteException {
+        byte[] request = Operations.OpenCloseRequest
+                .newBuilder()
+                .setFilename(filename)
+                .setMode(mode)
+                .build()
+                .toByteArray();
+
+        return Operations.OpenCloseResponse
+                .parseFrom(nameNode.openFile(request));
+    }
+
+    private Operations.ReadWriteResponse doReadWrite(
+            String filename,
+            int blockNumber,
+            ByteString contents,
+            Operations.FileMode mode,
+            IDataNode node
+    ) throws InvalidProtocolBufferException, RemoteException {
+        Operations.ReadWriteRequest request = Operations.ReadWriteRequest
+                .newBuilder()
+                .setFilename(filename)
+                .setBlockNumber(blockNumber)
+                .setContents(contents)
+                .build();
+
+        byte[] response = mode == Operations.FileMode.WRITE
+                ? node.writeBlock(request.toByteArray())
+                : node.readBlock(request.toByteArray());
+
+        return Operations.ReadWriteResponse.parseFrom(response);
+    }
+
+    /**
+     *
+     * E_NOENT = 3;    // File does not exist
+     *     E_NOBLK = 4;    // Block does not exist
+     *     E_EXIST = 5;    // File already exists
+     *     E_IO    = 6;    // I/O Error
+     *     E_INVAL = 7;    // Invalid arguments
+     *     E_BUSY  = 8;    // File is being written to
+     */
+    private static String getErrorMessage(Operations.StatusCode code) {
+        switch (code) {
+            case E_UNKWN: return "Unknown error";
+            case E_NOBLK: return "End of file";
+            case E_EXIST: return "File already exists";
+            case E_IO:    return "Failed to perform I/O operation";
+            case E_INVAL: return "Invalid request parameters";
+            case E_BUSY:  return "File has already been opened by other clients with a different file mode";
+            default:      return "";
+        }
     }
 
     public static void main(String[] args) throws RemoteException, UnknownHostException

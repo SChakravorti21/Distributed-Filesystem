@@ -30,7 +30,7 @@ public class DataNode implements IDataNode {
         this.id = id;
         this.ip = ip;
         this.port = port;
-        this.nameNode = connectNameNode();
+        this.nameNode = Utils.connectNameNode();
 
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
@@ -45,7 +45,7 @@ public class DataNode implements IDataNode {
                     // in a row, try to reconnect to NameNode
                     if(failedHeartbeats % 10 == 0) {
                         try {
-                            nameNode = connectNameNode();
+                            nameNode = Utils.connectNameNode();
                         } catch (Exception e) {
                             System.err.println("Failed to connect to NameNode");
                         }
@@ -105,12 +105,6 @@ public class DataNode implements IDataNode {
             localRegistry.bind(nodeName, stub);
             return localRegistry;
         }
-    }
-
-    private static INameNode connectNameNode() throws IOException, NotBoundException {
-        String registryHost = Utils.parseConfigFile("src/nn_config.txt").get("IP");
-        Registry serverRegistry = LocateRegistry.getRegistry(registryHost, NameNode.REGISTRY_PORT);
-        return (INameNode) serverRegistry.lookup("INameNode");
     }
 
     public static void appendtoFile(String Filename, String Line) {
