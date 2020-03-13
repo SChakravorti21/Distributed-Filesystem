@@ -1,17 +1,11 @@
 package ds.hdfs;
 import java.net.UnknownHostException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.rmi.*;
 import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
 import java.rmi.registry.Registry;
 import java.rmi.RemoteException;
 import java.util.*;
 import java.io.*;
-import java.util.stream.Collectors;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -23,36 +17,31 @@ public class Client
     public INameNode nameNode; //Name Node stub
     public IDataNode dataNode; //Data Node stub
     public int blockSize;
-    public Client()
-    {
+
+    public Client() throws IOException, NotBoundException {
         try {
             Map<String, String> config = Utils.parseConfigFile("src/cn_config.txt");
             blockSize = Integer.parseInt(config.get("BLOCK_SIZE"));
             nameNode = Utils.connectNameNode();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (NotBoundException e) {
-            e.printStackTrace();
         }
         //Get the Name Node Stub
         //nn_details contain NN details in the format Server;IP;Port
     }
 
-    public void PutFile(String Filename) //Put File
-    {
+    public void PutFile(String Filename) {
         System.out.println("Going to put file" + Filename);
 
         try {
             // Call NameNode for Open File Request
             try {
-                Operations.OpenCloseResponse response = getFileHandle(Filename, Operations.FileMode.WRITE);
+                Operations.OpenCloseResponse response = doOpenClose(Filename, Operations.FileMode.WRITE, true);
 
                 if(response.getStatus() != Operations.StatusCode.OK) {
                     System.err.println(getErrorMessage(response.getStatus()));
                     return;
                 }
             } catch (RemoteException e) {
-                System.err.println("Failed to open file to read/write");
+                System.err.println("Failed to open remote file for writing");
                 return;
             }
 
@@ -123,33 +112,50 @@ public class Client
                                 System.err.println(getErrorMessage(writeResponse.getStatus()));
                             } else {
                                 replicationCount++;
-                                blockIndex++;
                             }
                         } catch (RemoteException e) {
                             // ignore
-                            String.format("Could not write to DataNode %d, continuing anyways", nodeList.get(nodeIndex).getId());
                         }
                         nodeIndex++;
-                        if(nodeIndex >= nodeList.size()) break;
+                        if(nodeIndex >= nodeList.size()) {
+                            if (replicationCount < replicationFactor)
+                                System.err.printf("Failed to reach replication factor for block %d\n", blockIndex);
+                            break;
+                        }
                     }
+                    blockIndex++;
                 }
+                dataInputStream.close();
+
             } catch (IOException e) {
                 System.err.println("Failed to find or read file");
                 return;
             }
+
+            try {
+                Operations.OpenCloseResponse response = doOpenClose(Filename, Operations.FileMode.WRITE, false);
+
+                if(response.getStatus() != Operations.StatusCode.OK) {
+                    System.err.println(getErrorMessage(response.getStatus()));
+                    return;
+                }
+            } catch (RemoteException e) {
+                System.err.println("Failed to close file");
+                return;
+            }
+
+            System.out.println("Successfully wrote file.");
+
         } catch (InvalidProtocolBufferException e) {
             e.printStackTrace();
         }
-
-        System.out.println("Successfully wrote to file.");
     }
 
-    public void GetFile(String filename)
-    {
+    public void GetFile(String filename) {
         try {
             // Call NameNode for Open File Request
             try {
-                Operations.OpenCloseResponse response = getFileHandle(filename, Operations.FileMode.READ);
+                Operations.OpenCloseResponse response = doOpenClose(filename, Operations.FileMode.READ, true);
 
                 if(response.getStatus() != Operations.StatusCode.OK) {
                     System.err.println(getErrorMessage(response.getStatus()));
@@ -241,6 +247,18 @@ public class Client
             }
 
             outputStream.close();
+
+            try {
+                Operations.OpenCloseResponse response = doOpenClose(filename, Operations.FileMode.READ, false);
+                if(response.getStatus() != Operations.StatusCode.OK) {
+                    System.err.println(getErrorMessage(response.getStatus()));
+                    return;
+                }
+            } catch (RemoteException e) {
+                System.err.println("Failed to close remote file for reading");
+                return;
+            }
+
             System.out.printf("Successfully read file %s\n", filename);
         } catch (InvalidProtocolBufferException e) {
             System.err.println("Protobuf error");
@@ -249,9 +267,17 @@ public class Client
         }
     }
 
-    public void List()
-    {
-
+    public void List() {
+        try {
+            Operations.ListResponse response = Operations.ListResponse.parseFrom(nameNode.list());
+            for (String filename : response.getFilenamesList()) {
+                System.out.println(filename);
+            }
+        } catch (RemoteException e) {
+            System.err.println("Failed to access list of remote files");
+        } catch (InvalidProtocolBufferException e) {
+            e.printStackTrace();
+        }
     }
 
     private static IDataNode connectDataNode(String ip, int port, String name) throws RemoteException, NotBoundException {
@@ -259,8 +285,9 @@ public class Client
         return (IDataNode) serverRegistry.lookup(name);
     }
 
-    private Operations.OpenCloseResponse getFileHandle(String filename, Operations.FileMode mode)
+    private Operations.OpenCloseResponse doOpenClose(String filename, Operations.FileMode mode, boolean isOpen)
             throws InvalidProtocolBufferException, RemoteException {
+
         byte[] request = Operations.OpenCloseRequest
                 .newBuilder()
                 .setFilename(filename)
@@ -268,8 +295,11 @@ public class Client
                 .build()
                 .toByteArray();
 
-        return Operations.OpenCloseResponse
-                .parseFrom(nameNode.openFile(request));
+        byte[] response = (isOpen)
+                ? nameNode.openFile(request)
+                : nameNode.closeFile(request);
+
+        return Operations.OpenCloseResponse.parseFrom(response);
     }
 
     private Operations.ReadWriteResponse doReadWrite(
@@ -314,8 +344,7 @@ public class Client
         }
     }
 
-    public static void main(String[] args) throws RemoteException, UnknownHostException
-    {
+    public static void main(String[] args) throws IOException, NotBoundException {
         // To read config file and Connect to NameNode
         //Intitalize the Client
         Client Me = new Client();

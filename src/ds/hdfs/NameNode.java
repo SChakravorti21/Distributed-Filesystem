@@ -234,7 +234,7 @@ public class NameNode implements INameNode {
     }
 
 
-    public byte[] list(byte[] inp) {
+    public byte[] list() {
         synchronized (fileLock) {
             return Operations.ListResponse
                     .newBuilder()
