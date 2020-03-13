@@ -19,11 +19,9 @@ public class Client
     public int blockSize;
 
     public Client() throws IOException, NotBoundException {
-        try {
-            Map<String, String> config = Utils.parseConfigFile("src/cn_config.txt");
-            blockSize = Integer.parseInt(config.get("BLOCK_SIZE"));
-            nameNode = Utils.connectNameNode();
-        }
+        Map<String, String> config = Utils.parseConfigFile("src/cn_config.txt");
+        blockSize = Integer.parseInt(config.get("BLOCK_SIZE"));
+        nameNode = Utils.connectNameNode();
         //Get the Name Node Stub
         //nn_details contain NN details in the format Server;IP;Port
     }
