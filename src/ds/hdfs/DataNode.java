@@ -136,16 +136,16 @@ public class DataNode implements IDataNode {
         }
 
         String fileName = request.getFilename();
-        File file = new File(fileName);
+        long blockNumber = request.getBlockNumber();
+
+        String blockFileName = String.format("data-%d/%s.%s", 
+                id, fileName, blockNumber);
+        File file = new File(blockFileName);
 
         if(!file.exists()) {
             return createReadWriteResponse(Operations.StatusCode.E_INVAL);
         }
 
-        long blockNumber = request.getBlockNumber();
-
-        String blockFileName = String.format("data-%d/%s.%s", 
-                id, fileName, blockNumber);
         byte[] data;
 
         try {
@@ -180,22 +180,24 @@ public class DataNode implements IDataNode {
         }
 
         String fileName = request.getFilename();
-        File file = new File(fileName);
-
-        if(!file.exists()) {
-            try {
-                file.createNewFile();
-            } catch (IOException e) {
-                System.err.println("Failed to create block file");
-                return createReadWriteResponse(Operations.StatusCode.E_IO);
-            }
-        }
-
         long blockNumber = request.getBlockNumber();
         byte[] contents = request.getContents().toByteArray();
 
         String blockFileName = String.format("data-%d/%s.%s", 
                 id, fileName, blockNumber);
+        File file = new File(blockFileName);
+
+        if(!file.exists()) {
+            try {
+                Path pathToFile = Paths.get(blockFileName);
+                Files.createDirectories(pathToFile.getParent());
+                Files.createFile(pathToFile);
+            } catch (IOException e) {
+                System.err.println("Failed to create block file");
+                e.printStackTrace();
+                return createReadWriteResponse(Operations.StatusCode.E_IO);
+            }
+        }
 
         try (OutputStream outputStream = new FileOutputStream(new File(blockFileName))) {
             outputStream.write(contents);
