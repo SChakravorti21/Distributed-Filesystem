@@ -203,7 +203,7 @@ public class NameNode implements INameNode {
                 // If no such nodes are found, we won't be able to
                 // tell the client which DataNodes to contact anyways
                 if (availableNodes.size() == 0) {
-                    return createGetBlockLocationsResponse(Operations.StatusCode.E_NOBLK);
+                    return createGetBlockLocationsResponse(Operations.StatusCode.E_NOBLK, new ArrayList<>());
                 }
 
                 return createGetBlockLocationsResponse(

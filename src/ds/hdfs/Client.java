@@ -314,16 +314,17 @@ public class Client
             Operations.FileMode mode,
             IDataNode node
     ) throws InvalidProtocolBufferException, RemoteException {
-        Operations.ReadWriteRequest request = Operations.ReadWriteRequest
+        Operations.ReadWriteRequest.Builder requestBuilder = Operations.ReadWriteRequest
                 .newBuilder()
                 .setFilename(filename)
-                .setBlockNumber(blockNumber)
-                .setContents(contents)
-                .build();
+                .setBlockNumber(blockNumber);
+
+        if(contents != null)
+            requestBuilder.setContents(contents);
 
         byte[] response = mode == Operations.FileMode.WRITE
-                ? node.writeBlock(request.toByteArray())
-                : node.readBlock(request.toByteArray());
+                ? node.writeBlock(requestBuilder.build().toByteArray())
+                : node.readBlock(requestBuilder.build().toByteArray());
 
         return Operations.ReadWriteResponse.parseFrom(response);
     }
