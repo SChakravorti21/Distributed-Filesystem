@@ -31,8 +31,11 @@ public class Client
 
         try {
             // Call NameNode for Open File Request
+            System.out.println("Going to open file");
+            
             try {
                 Operations.OpenCloseResponse response = doOpenClose(Filename, Operations.FileMode.WRITE, true);
+                System.out.println(response);
 
                 if(response.getStatus() != Operations.StatusCode.OK) {
                     System.err.println(getErrorMessage(response.getStatus()));
@@ -45,6 +48,8 @@ public class Client
 
             List<Operations.DataNode> nodeList;
             int replicationFactor;
+
+            System.out.println("Going to assign blocks");
 
             try {
                 // Call NameNode for Assign Block Request
@@ -71,8 +76,9 @@ public class Client
             List<IDataNode> stubList = new ArrayList<>();
 
             for (Operations.DataNode dn : nodeList) {
+                System.out.println(dn);
                 try {
-                    stubList.add(connectDataNode(dn.getIp(), dn.getPort(), "IDataNode"));
+                    stubList.add(connectDataNode(dn.getIp(), dn.getPort(), "IDataNode-" + dn.getId()));
                 } catch (NotBoundException | RemoteException e) {
                     System.err.println(
                         String.format("Could not connect to DataNode %d, continuing anyways", dn.getId())
@@ -213,7 +219,7 @@ public class Client
                             stubs.put(node.getId(), connectDataNode(
                                     node.getIp(),
                                     node.getPort(),
-                                    "" + node.getId()
+                                    "IDataNode-" + node.getId()
                             ));
                         }
 
@@ -279,7 +285,7 @@ public class Client
     }
 
     private static IDataNode connectDataNode(String ip, int port, String name) throws RemoteException, NotBoundException {
-        Registry serverRegistry = LocateRegistry.getRegistry(ip, port);
+        Registry serverRegistry = LocateRegistry.getRegistry(ip, NameNode.REGISTRY_PORT);
         return (IDataNode) serverRegistry.lookup(name);
     }
 
@@ -333,6 +339,7 @@ public class Client
     private static String getErrorMessage(Operations.StatusCode code) {
         switch (code) {
             case E_UNKWN: return "Unknown error";
+            case E_NOENT: return "File does not exist";
             case E_NOBLK: return "End of file";
             case E_EXIST: return "File already exists";
             case E_IO:    return "Failed to perform I/O operation";
@@ -387,7 +394,6 @@ public class Client
             }
             else if(Split_Commands[0].equals("list"))
             {
-                System.out.println("List request");
                 //Get list of files in HDFS
                 Me.List();
             }

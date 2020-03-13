@@ -117,8 +117,13 @@ public class NameNode implements INameNode {
             FileStatus fileStatus = fileStatuses.getOrDefault(filename, null);
 
             if (fileStatus == null) {
-                // If the file doesn't exist, it can't be opened
-                status = Operations.StatusCode.E_NOENT;
+                if(requestedMode == Operations.FileMode.READ) {
+                    // If the file doesn't exist, it can't be opened
+                    status = Operations.StatusCode.E_NOENT;
+                } else {
+                    // We're writing to the file for the first time
+                    fileStatuses.put(filename, new FileStatus());
+                }
             } else if (fileStatus.openMode == Operations.FileMode.WRITE) {
                 // If ANYONE is writing to the file, no one can read
                 // or write to it
@@ -238,6 +243,7 @@ public class NameNode implements INameNode {
         synchronized (fileLock) {
             return Operations.ListResponse
                     .newBuilder()
+                    .setStatus(Operations.StatusCode.OK)
                     .addAllFilenames(fileStatuses.keySet())
                     .build()
                     .toByteArray();

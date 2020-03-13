@@ -14,3 +14,6 @@ run_name_node:
 
 run_data_node:
 	java -cp ${CLASSPATH} ds.hdfs.DataNode ${CONFIG}
+
+run_client:
+	java -cp ${CLASSPATH} ds.hdfs.Client

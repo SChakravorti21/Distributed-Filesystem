@@ -138,7 +138,8 @@ public class DataNode implements IDataNode {
         String fileName = request.getFilename();
         long blockNumber = request.getBlockNumber();
 
-        String blockFileName = fileName+"."+blockNumber;
+        String blockFileName = String.format("data-%d/%s.%s", 
+                id, fileName, blockNumber);
         byte[] data;
 
         try {
@@ -176,7 +177,8 @@ public class DataNode implements IDataNode {
         long blockNumber = request.getBlockNumber();
         byte[] contents = request.getContents().toByteArray();
 
-        String blockFileName = fileName+"."+blockNumber;
+        String blockFileName = String.format("data-%d/%s.%s", 
+                id, fileName, blockNumber);
 
         try (OutputStream outputStream = new FileOutputStream(new File(blockFileName))) {
             outputStream.write(contents);
