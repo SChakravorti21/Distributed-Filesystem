@@ -136,6 +136,12 @@ public class DataNode implements IDataNode {
         }
 
         String fileName = request.getFilename();
+        File file = new File(fileName);
+
+        if(!file.exists()) {
+            return createReadWriteResponse(Operations.StatusCode.E_INVAL);
+        }
+
         long blockNumber = request.getBlockNumber();
 
         String blockFileName = String.format("data-%d/%s.%s", 
@@ -174,6 +180,17 @@ public class DataNode implements IDataNode {
         }
 
         String fileName = request.getFilename();
+        File file = new File(fileName);
+
+        if(!file.exists()) {
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                System.err.println("Failed to create block file");
+                return createReadWriteResponse(Operations.StatusCode.E_IO);
+            }
+        }
+
         long blockNumber = request.getBlockNumber();
         byte[] contents = request.getContents().toByteArray();
 
