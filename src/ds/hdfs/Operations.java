@@ -3914,34 +3914,6 @@ public final class Operations {
   public interface AssignBlockRequestOrBuilder extends
       // @@protoc_insertion_point(interface_extends:hdfs.AssignBlockRequest)
       com.google.protobuf.MessageOrBuilder {
-
-    /**
-     * <code>required string filename = 1;</code>
-     * @return Whether the filename field is set.
-     */
-    boolean hasFilename();
-    /**
-     * <code>required string filename = 1;</code>
-     * @return The filename.
-     */
-    java.lang.String getFilename();
-    /**
-     * <code>required string filename = 1;</code>
-     * @return The bytes for filename.
-     */
-    com.google.protobuf.ByteString
-        getFilenameBytes();
-
-    /**
-     * <code>required int64 blockNumber = 2;</code>
-     * @return Whether the blockNumber field is set.
-     */
-    boolean hasBlockNumber();
-    /**
-     * <code>required int64 blockNumber = 2;</code>
-     * @return The blockNumber.
-     */
-    long getBlockNumber();
   }
   /**
    * Protobuf type {@code hdfs.AssignBlockRequest}
@@ -3956,7 +3928,6 @@ public final class Operations {
       super(builder);
     }
     private AssignBlockRequest() {
-      filename_ = "";
     }
 
     @java.lang.Override
@@ -3979,7 +3950,6 @@ public final class Operations {
       if (extensionRegistry == null) {
         throw new java.lang.NullPointerException();
       }
-      int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
@@ -3990,17 +3960,6 @@ public final class Operations {
             case 0:
               done = true;
               break;
-            case 10: {
-              com.google.protobuf.ByteString bs = input.readBytes();
-              bitField0_ |= 0x00000001;
-              filename_ = bs;
-              break;
-            }
-            case 16: {
-              bitField0_ |= 0x00000002;
-              blockNumber_ = input.readInt64();
-              break;
-            }
             default: {
               if (!parseUnknownField(
                   input, unknownFields, extensionRegistry, tag)) {
@@ -4033,69 +3992,6 @@ public final class Operations {
               ds.hdfs.Operations.AssignBlockRequest.class, ds.hdfs.Operations.AssignBlockRequest.Builder.class);
     }
 
-    private int bitField0_;
-    public static final int FILENAME_FIELD_NUMBER = 1;
-    private volatile java.lang.Object filename_;
-    /**
-     * <code>required string filename = 1;</code>
-     * @return Whether the filename field is set.
-     */
-    public boolean hasFilename() {
-      return ((bitField0_ & 0x00000001) != 0);
-    }
-    /**
-     * <code>required string filename = 1;</code>
-     * @return The filename.
-     */
-    public java.lang.String getFilename() {
-      java.lang.Object ref = filename_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        if (bs.isValidUtf8()) {
-          filename_ = s;
-        }
-        return s;
-      }
-    }
-    /**
-     * <code>required string filename = 1;</code>
-     * @return The bytes for filename.
-     */
-    public com.google.protobuf.ByteString
-        getFilenameBytes() {
-      java.lang.Object ref = filename_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        filename_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-
-    public static final int BLOCKNUMBER_FIELD_NUMBER = 2;
-    private long blockNumber_;
-    /**
-     * <code>required int64 blockNumber = 2;</code>
-     * @return Whether the blockNumber field is set.
-     */
-    public boolean hasBlockNumber() {
-      return ((bitField0_ & 0x00000002) != 0);
-    }
-    /**
-     * <code>required int64 blockNumber = 2;</code>
-     * @return The blockNumber.
-     */
-    public long getBlockNumber() {
-      return blockNumber_;
-    }
-
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -4103,14 +3999,6 @@ public final class Operations {
       if (isInitialized == 1) return true;
       if (isInitialized == 0) return false;
 
-      if (!hasFilename()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      if (!hasBlockNumber()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -4118,12 +4006,6 @@ public final class Operations {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) != 0)) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, filename_);
-      }
-      if (((bitField0_ & 0x00000002) != 0)) {
-        output.writeInt64(2, blockNumber_);
-      }
       unknownFields.writeTo(output);
     }
 
@@ -4133,13 +4015,6 @@ public final class Operations {
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) != 0)) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, filename_);
-      }
-      if (((bitField0_ & 0x00000002) != 0)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeInt64Size(2, blockNumber_);
-      }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
@@ -4155,16 +4030,6 @@ public final class Operations {
       }
       ds.hdfs.Operations.AssignBlockRequest other = (ds.hdfs.Operations.AssignBlockRequest) obj;
 
-      if (hasFilename() != other.hasFilename()) return false;
-      if (hasFilename()) {
-        if (!getFilename()
-            .equals(other.getFilename())) return false;
-      }
-      if (hasBlockNumber() != other.hasBlockNumber()) return false;
-      if (hasBlockNumber()) {
-        if (getBlockNumber()
-            != other.getBlockNumber()) return false;
-      }
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
@@ -4176,15 +4041,6 @@ public final class Operations {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
-      if (hasFilename()) {
-        hash = (37 * hash) + FILENAME_FIELD_NUMBER;
-        hash = (53 * hash) + getFilename().hashCode();
-      }
-      if (hasBlockNumber()) {
-        hash = (37 * hash) + BLOCKNUMBER_FIELD_NUMBER;
-        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
-            getBlockNumber());
-      }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -4318,10 +4174,6 @@ public final class Operations {
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        filename_ = "";
-        bitField0_ = (bitField0_ & ~0x00000001);
-        blockNumber_ = 0L;
-        bitField0_ = (bitField0_ & ~0x00000002);
         return this;
       }
 
@@ -4348,17 +4200,6 @@ public final class Operations {
       @java.lang.Override
       public ds.hdfs.Operations.AssignBlockRequest buildPartial() {
         ds.hdfs.Operations.AssignBlockRequest result = new ds.hdfs.Operations.AssignBlockRequest(this);
-        int from_bitField0_ = bitField0_;
-        int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) != 0)) {
-          to_bitField0_ |= 0x00000001;
-        }
-        result.filename_ = filename_;
-        if (((from_bitField0_ & 0x00000002) != 0)) {
-          result.blockNumber_ = blockNumber_;
-          to_bitField0_ |= 0x00000002;
-        }
-        result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
       }
@@ -4407,14 +4248,6 @@ public final class Operations {
 
       public Builder mergeFrom(ds.hdfs.Operations.AssignBlockRequest other) {
         if (other == ds.hdfs.Operations.AssignBlockRequest.getDefaultInstance()) return this;
-        if (other.hasFilename()) {
-          bitField0_ |= 0x00000001;
-          filename_ = other.filename_;
-          onChanged();
-        }
-        if (other.hasBlockNumber()) {
-          setBlockNumber(other.getBlockNumber());
-        }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
@@ -4422,12 +4255,6 @@ public final class Operations {
 
       @java.lang.Override
       public final boolean isInitialized() {
-        if (!hasFilename()) {
-          return false;
-        }
-        if (!hasBlockNumber()) {
-          return false;
-        }
         return true;
       }
 
@@ -4447,128 +4274,6 @@ public final class Operations {
             mergeFrom(parsedMessage);
           }
         }
-        return this;
-      }
-      private int bitField0_;
-
-      private java.lang.Object filename_ = "";
-      /**
-       * <code>required string filename = 1;</code>
-       * @return Whether the filename field is set.
-       */
-      public boolean hasFilename() {
-        return ((bitField0_ & 0x00000001) != 0);
-      }
-      /**
-       * <code>required string filename = 1;</code>
-       * @return The filename.
-       */
-      public java.lang.String getFilename() {
-        java.lang.Object ref = filename_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          if (bs.isValidUtf8()) {
-            filename_ = s;
-          }
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
-      }
-      /**
-       * <code>required string filename = 1;</code>
-       * @return The bytes for filename.
-       */
-      public com.google.protobuf.ByteString
-          getFilenameBytes() {
-        java.lang.Object ref = filename_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          filename_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>required string filename = 1;</code>
-       * @param value The filename to set.
-       * @return This builder for chaining.
-       */
-      public Builder setFilename(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000001;
-        filename_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>required string filename = 1;</code>
-       * @return This builder for chaining.
-       */
-      public Builder clearFilename() {
-        bitField0_ = (bitField0_ & ~0x00000001);
-        filename_ = getDefaultInstance().getFilename();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>required string filename = 1;</code>
-       * @param value The bytes for filename to set.
-       * @return This builder for chaining.
-       */
-      public Builder setFilenameBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000001;
-        filename_ = value;
-        onChanged();
-        return this;
-      }
-
-      private long blockNumber_ ;
-      /**
-       * <code>required int64 blockNumber = 2;</code>
-       * @return Whether the blockNumber field is set.
-       */
-      public boolean hasBlockNumber() {
-        return ((bitField0_ & 0x00000002) != 0);
-      }
-      /**
-       * <code>required int64 blockNumber = 2;</code>
-       * @return The blockNumber.
-       */
-      public long getBlockNumber() {
-        return blockNumber_;
-      }
-      /**
-       * <code>required int64 blockNumber = 2;</code>
-       * @param value The blockNumber to set.
-       * @return This builder for chaining.
-       */
-      public Builder setBlockNumber(long value) {
-        bitField0_ |= 0x00000002;
-        blockNumber_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>required int64 blockNumber = 2;</code>
-       * @return This builder for chaining.
-       */
-      public Builder clearBlockNumber() {
-        bitField0_ = (bitField0_ & ~0x00000002);
-        blockNumber_ = 0L;
-        onChanged();
         return this;
       }
       @java.lang.Override
@@ -11045,27 +10750,26 @@ public final class Operations {
       "\022\020\n\010contents\030\002 \001(\014\"B\n\020OpenCloseRequest\022\020" +
       "\n\010filename\030\001 \002(\t\022\034\n\004mode\030\002 \002(\0162\016.hdfs.Fi" +
       "leMode\"5\n\021OpenCloseResponse\022 \n\006status\030\001 " +
-      "\002(\0162\020.hdfs.StatusCode\";\n\022AssignBlockRequ" +
-      "est\022\020\n\010filename\030\001 \002(\t\022\023\n\013blockNumber\030\002 \002" +
-      "(\003\"q\n\023AssignBlockResponse\022 \n\006status\030\001 \002(" +
-      "\0162\020.hdfs.StatusCode\022\035\n\005nodes\030\002 \003(\0132\016.hdf" +
-      "s.DataNode\022\031\n\021replicationFactor\030\003 \002(\005\"A\n" +
-      "\030GetBlockLocationsRequest\022\020\n\010filename\030\001 " +
-      "\002(\t\022\023\n\013blockNumber\030\002 \002(\003\"\\\n\031GetBlockLoca" +
-      "tionsResponse\022 \n\006status\030\001 \002(\0162\020.hdfs.Sta" +
-      "tusCode\022\035\n\005nodes\030\002 \003(\0132\016.hdfs.DataNode\"C" +
-      "\n\014ListResponse\022 \n\006status\030\001 \002(\0162\020.hdfs.St" +
-      "atusCode\022\021\n\tfilenames\030\002 \003(\t\"0\n\tFileBlock" +
-      "\022\020\n\010filename\030\001 \002(\t\022\021\n\tfileBlock\030\002 \002(\003\"W\n" +
-      "\tHeartbeat\022\034\n\004node\030\001 \002(\0132\016.hdfs.DataNode" +
-      "\022,\n\023availableFileBlocks\030\002 \003(\0132\017.hdfs.Fil" +
-      "eBlock\"e\n\023BlockReportResponse\022 \n\006status\030" +
-      "\001 \002(\0162\020.hdfs.StatusCode\022,\n\023availableFile" +
-      "Blocks\030\002 \003(\0132\017.hdfs.FileBlock*k\n\nStatusC" +
-      "ode\022\006\n\002OK\020\001\022\013\n\007E_UNKWN\020\002\022\013\n\007E_NOENT\020\003\022\013\n" +
-      "\007E_NOBLK\020\004\022\013\n\007E_EXIST\020\005\022\010\n\004E_IO\020\006\022\013\n\007E_I" +
-      "NVAL\020\007\022\n\n\006E_BUSY\020\010*\037\n\010FileMode\022\010\n\004READ\020\001" +
-      "\022\t\n\005WRITE\020\002B\025\n\007ds.hdfsB\nOperations"
+      "\002(\0162\020.hdfs.StatusCode\"\024\n\022AssignBlockRequ" +
+      "est\"q\n\023AssignBlockResponse\022 \n\006status\030\001 \002" +
+      "(\0162\020.hdfs.StatusCode\022\035\n\005nodes\030\002 \003(\0132\016.hd" +
+      "fs.DataNode\022\031\n\021replicationFactor\030\003 \002(\005\"A" +
+      "\n\030GetBlockLocationsRequest\022\020\n\010filename\030\001" +
+      " \002(\t\022\023\n\013blockNumber\030\002 \002(\003\"\\\n\031GetBlockLoc" +
+      "ationsResponse\022 \n\006status\030\001 \002(\0162\020.hdfs.St" +
+      "atusCode\022\035\n\005nodes\030\002 \003(\0132\016.hdfs.DataNode\"" +
+      "C\n\014ListResponse\022 \n\006status\030\001 \002(\0162\020.hdfs.S" +
+      "tatusCode\022\021\n\tfilenames\030\002 \003(\t\"0\n\tFileBloc" +
+      "k\022\020\n\010filename\030\001 \002(\t\022\021\n\tfileBlock\030\002 \002(\003\"W" +
+      "\n\tHeartbeat\022\034\n\004node\030\001 \002(\0132\016.hdfs.DataNod" +
+      "e\022,\n\023availableFileBlocks\030\002 \003(\0132\017.hdfs.Fi" +
+      "leBlock\"e\n\023BlockReportResponse\022 \n\006status" +
+      "\030\001 \002(\0162\020.hdfs.StatusCode\022,\n\023availableFil" +
+      "eBlocks\030\002 \003(\0132\017.hdfs.FileBlock*k\n\nStatus" +
+      "Code\022\006\n\002OK\020\001\022\013\n\007E_UNKWN\020\002\022\013\n\007E_NOENT\020\003\022\013" +
+      "\n\007E_NOBLK\020\004\022\013\n\007E_EXIST\020\005\022\010\n\004E_IO\020\006\022\013\n\007E_" +
+      "INVAL\020\007\022\n\n\006E_BUSY\020\010*\037\n\010FileMode\022\010\n\004READ\020" +
+      "\001\022\t\n\005WRITE\020\002B\025\n\007ds.hdfsB\nOperations"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -11106,7 +10810,7 @@ public final class Operations {
     internal_static_hdfs_AssignBlockRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_hdfs_AssignBlockRequest_descriptor,
-        new java.lang.String[] { "Filename", "BlockNumber", });
+        new java.lang.String[] { });
     internal_static_hdfs_AssignBlockResponse_descriptor =
       getDescriptor().getMessageTypes().get(6);
     internal_static_hdfs_AssignBlockResponse_fieldAccessorTable = new
