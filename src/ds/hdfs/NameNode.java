@@ -300,6 +300,9 @@ public class NameNode implements INameNode {
                         .collect(Collectors.toList());
 
                 blockInfoList.addAll(nodeBlockInfoList);
+
+                nodeBlockInfoList.forEach(blockInfo ->
+                        fileStatuses.putIfAbsent(blockInfo.filename, new FileStatus(null)));
             }
         }
     }
