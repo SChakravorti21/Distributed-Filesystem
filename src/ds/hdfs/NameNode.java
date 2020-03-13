@@ -122,7 +122,7 @@ public class NameNode implements INameNode {
                     status = Operations.StatusCode.E_NOENT;
                 } else {
                     // We're writing to the file for the first time
-                    fileStatuses.put(filename, new FileStatus());
+                    fileStatuses.put(filename, new FileStatus(requestedMode));
                 }
             } else if (fileStatus.openMode == Operations.FileMode.WRITE) {
                 // If ANYONE is writing to the file, no one can read
@@ -393,8 +393,12 @@ public class NameNode implements INameNode {
     }
 
     public static class FileStatus {
-        Operations.FileMode openMode = null;
+        Operations.FileMode openMode;
         int openHandles = 0;
+
+        FileStatus(Operations.FileMode mode) {
+            openMode = mode;
+        }
     }
 
 }

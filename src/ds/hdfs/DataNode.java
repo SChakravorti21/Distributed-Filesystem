@@ -210,7 +210,7 @@ public class DataNode implements IDataNode {
     }
 
     public void sendHeartbeat() throws RemoteException {
-        File folder = new File("data/node1");
+        File folder = new File(String.format("data-%d/", id));
         File[] files = folder.listFiles();
 
         if(files == null)

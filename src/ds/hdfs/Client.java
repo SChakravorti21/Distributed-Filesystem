@@ -93,11 +93,11 @@ public class Client
                 DataInputStream dataInputStream = new DataInputStream(input);
                 int fileIndex = 0; // file offset
                 int blockIndex = 0; // block number
-                int nodeIndex = 0; // node index in list
 
                 while (true) {
+                    int nodeIndex = 0; // node index in list
                     byte[] curr = new byte[blockSize];
-                    int numRead = dataInputStream.read(curr, fileIndex, blockSize); // returns bytes read (len)
+                    int numRead = dataInputStream.read(curr); // returns bytes read (len)
                     if (numRead <= 0) break;
                     fileIndex += numRead;
 
@@ -120,6 +120,7 @@ public class Client
                         } catch (RemoteException e) {
                             // ignore
                         }
+
                         nodeIndex++;
                         if(nodeIndex >= nodeList.size()) {
                             if (replicationCount < replicationFactor)
