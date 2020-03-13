@@ -148,7 +148,18 @@ public class Client
 
     public void GetFile(String remoteFilename, String localFilename) {
         try {
-            // Call NameNode for Open File Request
+            File outputFile;
+            FileOutputStream outputStream;
+
+            try {
+                outputFile = new File(localFilename);
+                outputFile.createNewFile();
+                outputStream = new FileOutputStream(localFilename);
+            } catch (IOException e) {
+                System.err.println("Failed to open local file for writing");
+                return;
+            }
+
             try {
                 Operations.OpenCloseResponse response = doOpenClose(remoteFilename, Operations.FileMode.READ, true);
 
@@ -162,18 +173,7 @@ public class Client
             }
 
             int blockNumber = 0;
-            File outputFile;
-            FileOutputStream outputStream;
             Map<Integer, IDataNode> stubs = new HashMap<>();
-
-            try {
-                outputFile = new File(localFilename);
-                outputFile.createNewFile();
-                outputStream = new FileOutputStream(localFilename);
-            } catch (IOException e) {
-                System.err.println("Failed to open local file for writing");
-                return;
-            }
 
             while(true) {
                 byte[] contents = null;
@@ -245,6 +245,7 @@ public class Client
 
             try {
                 Operations.OpenCloseResponse response = doOpenClose(remoteFilename, Operations.FileMode.READ, false);
+
                 if(response.getStatus() != Operations.StatusCode.OK) {
                     System.err.println(getErrorMessage(response.getStatus()));
                     return;
