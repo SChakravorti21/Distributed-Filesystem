@@ -122,7 +122,7 @@ public class NameNode implements INameNode {
                     status = Operations.StatusCode.E_NOENT;
                 } else {
                     // We're writing to the file for the first time
-                    fileStatuses.put(filename, new FileStatus(requestedMode));
+                    fileStatuses.put(filename, new FileStatus(requestedMode, 1));
                 }
             } else if (fileStatus.openMode == Operations.FileMode.WRITE) {
                 // If ANYONE is writing to the file, no one can read
@@ -298,7 +298,7 @@ public class NameNode implements INameNode {
                 blockInfoList.addAll(nodeBlockInfoList);
 
                 nodeBlockInfoList.forEach(blockInfo ->
-                        fileStatuses.putIfAbsent(blockInfo.filename, new FileStatus(null)));
+                        fileStatuses.putIfAbsent(blockInfo.filename, new FileStatus(null, 0)));
             }
         }
     }
@@ -399,10 +399,11 @@ public class NameNode implements INameNode {
 
     public static class FileStatus {
         Operations.FileMode openMode;
-        int openHandles = 0;
+        int openHandles;
 
-        FileStatus(Operations.FileMode mode) {
+        FileStatus(Operations.FileMode mode, int handles) {
             openMode = mode;
+            openHandles = handles;
         }
     }
 

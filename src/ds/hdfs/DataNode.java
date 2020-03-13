@@ -138,7 +138,7 @@ public class DataNode implements IDataNode {
         String fileName = request.getFilename();
         long blockNumber = request.getBlockNumber();
 
-        String blockFileName = String.format("data-%d/%s.%s", 
+        String blockFileName = String.format("data/node-%d/%s.%s", 
                 id, fileName, blockNumber);
         File file = new File(blockFileName);
 
@@ -183,7 +183,7 @@ public class DataNode implements IDataNode {
         long blockNumber = request.getBlockNumber();
         byte[] contents = request.getContents().toByteArray();
 
-        String blockFileName = String.format("data-%d/%s.%s", 
+        String blockFileName = String.format("data/node-%d/%s.%s", 
                 id, fileName, blockNumber);
         File file = new File(blockFileName);
 
@@ -210,7 +210,7 @@ public class DataNode implements IDataNode {
     }
 
     public void sendHeartbeat() throws RemoteException {
-        File folder = new File(String.format("data-%d/", id));
+        File folder = new File(String.format("data/node-%d/", id));
         File[] files = folder.listFiles();
 
         if(files == null)

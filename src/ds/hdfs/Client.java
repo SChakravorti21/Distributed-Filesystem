@@ -26,16 +26,11 @@ public class Client
         //nn_details contain NN details in the format Server;IP;Port
     }
 
-    public void PutFile(String Filename) {
-        System.out.println("Going to put file" + Filename);
-
+    public void PutFile(String localFilename, String remoteFilename) {
         try {
             // Call NameNode for Open File Request
-            System.out.println("Going to open file");
-            
             try {
-                Operations.OpenCloseResponse response = doOpenClose(Filename, Operations.FileMode.WRITE, true);
-                System.out.println(response);
+                Operations.OpenCloseResponse response = doOpenClose(remoteFilename, Operations.FileMode.WRITE, true);
 
                 if(response.getStatus() != Operations.StatusCode.OK) {
                     System.err.println(getErrorMessage(response.getStatus()));
@@ -48,8 +43,6 @@ public class Client
 
             List<Operations.DataNode> nodeList;
             int replicationFactor;
-
-            System.out.println("Going to assign blocks");
 
             try {
                 // Call NameNode for Assign Block Request
@@ -76,7 +69,6 @@ public class Client
             List<IDataNode> stubList = new ArrayList<>();
 
             for (Operations.DataNode dn : nodeList) {
-                System.out.println(dn);
                 try {
                     stubList.add(connectDataNode(dn.getIp(), dn.getPort(), "IDataNode-" + dn.getId()));
                 } catch (NotBoundException | RemoteException e) {
@@ -89,7 +81,7 @@ public class Client
 
             // Open file and put into input stream
             try {
-                InputStream input = new FileInputStream(Filename);
+                InputStream input = new FileInputStream(localFilename);
                 DataInputStream dataInputStream = new DataInputStream(input);
                 int fileIndex = 0; // file offset
                 int blockIndex = 0; // block number
@@ -105,7 +97,7 @@ public class Client
                     while (replicationCount < replicationFactor) {
                         try {
                             Operations.ReadWriteResponse writeResponse = doReadWrite(
-                                    Filename,
+                                    remoteFilename,
                                     blockIndex,
                                     ByteString.copyFrom(curr),
                                     Operations.FileMode.WRITE,
@@ -138,7 +130,7 @@ public class Client
             }
 
             try {
-                Operations.OpenCloseResponse response = doOpenClose(Filename, Operations.FileMode.WRITE, false);
+                Operations.OpenCloseResponse response = doOpenClose(remoteFilename, Operations.FileMode.WRITE, false);
 
                 if(response.getStatus() != Operations.StatusCode.OK) {
                     System.err.println(getErrorMessage(response.getStatus()));
@@ -149,8 +141,8 @@ public class Client
                 return;
             }
 
-            System.out.println("Successfully wrote file.");
-
+            System.out.printf("Successfully wrote local file (%s) to remote file (%s)\n",
+                    localFilename, remoteFilename);
         } catch (InvalidProtocolBufferException e) {
             e.printStackTrace();
         }
@@ -373,10 +365,11 @@ public class Client
             else if(Split_Commands[0].equals("put"))  // put Filename
             {
                 //Put file into HDFS
-                String Filename;
+                String localFilename, remoteFilename;
                 try{
-                    Filename = Split_Commands[1];
-                    Me.PutFile(Filename);
+                    localFilename = Split_Commands[1];
+                    remoteFilename = Split_Commands.length > 2 ? Split_Commands[2] : localFilename;
+                    Me.PutFile(localFilename, remoteFilename);
                 }catch(ArrayIndexOutOfBoundsException e){
                     System.out.println("Please type 'help' for instructions");
                     continue;
