@@ -27,22 +27,36 @@ public class Client
     }
 
     public void PutFile(String localFilename, String remoteFilename) {
+        System.out.printf("Going to write local file (%s) to remote file (%s)\n",
+                localFilename, remoteFilename);
+
         try {
+            DataInputStream dataInputStream;
+
+            try (InputStream input = new FileInputStream(localFilename)) {
+                dataInputStream = new DataInputStream(input);
+            } catch (IOException e) {
+                System.err.println("Failed to open local file for reading");
+                return;
+            }
+
             // Call NameNode for Open File Request
             try {
                 Operations.OpenCloseResponse response = doOpenClose(remoteFilename, Operations.FileMode.WRITE, true);
 
                 if(response.getStatus() != Operations.StatusCode.OK) {
                     System.err.println(getErrorMessage(response.getStatus()));
+                    dataInputStream.close();
                     return;
                 }
-            } catch (RemoteException e) {
+            } catch (IOException e) {
                 System.err.println("Failed to open remote file for writing");
+                dataInputStream.close();
                 return;
             }
 
-            List<Operations.DataNode> nodeList;
-            int replicationFactor;
+            List<Operations.DataNode> nodeList = null;
+            int replicationFactor = -1;
 
             try {
                 // Call NameNode for Assign Block Request
@@ -55,37 +69,23 @@ public class Client
 
                 if(blockResponse.getStatus() != Operations.StatusCode.OK) {
                     System.err.println(getErrorMessage(blockResponse.getStatus()));
-                    return;
+                } else {
+                    nodeList = blockResponse.getNodesList();
+                    replicationFactor = blockResponse.getReplicationFactor();
                 }
-
-                nodeList = blockResponse.getNodesList();
-                replicationFactor = blockResponse.getReplicationFactor();
             } catch (RemoteException e) {
                 System.err.println("Failed assign blocks for file");
-                return;
             }
-
-            // Get Stubs for each individual DataNode
-            List<IDataNode> stubList = new ArrayList<>();
-
-            for (Operations.DataNode dn : nodeList) {
-                try {
-                    stubList.add(connectDataNode(dn.getIp(), dn.getPort(), "IDataNode-" + dn.getId()));
-                } catch (NotBoundException | RemoteException e) {
-                    System.err.println(
-                        String.format("Could not connect to DataNode %d, continuing anyways", dn.getId())
-                    );
-                }
-            }
-
 
             // Open file and put into input stream
             try {
-                InputStream input = new FileInputStream(localFilename);
-                DataInputStream dataInputStream = new DataInputStream(input);
                 int blockIndex = 0; // block number
+                Map<Integer, IDataNode> stubs = new HashMap<>();
 
-                while (true) {
+                // We break out of the loop when we reach the end of the file.
+                // The while condition prevents us from putting the file
+                // if no nodes are active.
+                while (nodeList != null && replicationFactor != -1) {
                     int replicationCount = 0;
                     byte[] curr = new byte[blockSize];
 
@@ -93,16 +93,26 @@ public class Client
                     if (numRead <= 0) break;
 
                     for(int nodeIndex = 0;
-                        nodeIndex < stubList.size() && replicationCount < replicationFactor;
+                        nodeIndex < nodeList.size() && replicationCount < replicationFactor;
                         nodeIndex++
                     ) {
+                        Operations.DataNode node = nodeList.get(nodeIndex);
+
                         try {
+                            if(!stubs.containsKey(node.getId())) {
+                                stubs.put(node.getId(), connectDataNode(
+                                        node.getIp(),
+                                        node.getPort(),
+                                        "IDataNode-" + node.getId()
+                                ));
+                            }
+
                             Operations.ReadWriteResponse writeResponse = doReadWrite(
                                     remoteFilename,
                                     blockIndex,
                                     ByteString.copyFrom(curr, 0, numRead),
                                     Operations.FileMode.WRITE,
-                                    stubList.get(nodeIndex)
+                                    stubs.get(node.getId())
                             );
 
                             if(writeResponse.getStatus() != Operations.StatusCode.OK) {
@@ -110,6 +120,8 @@ public class Client
                             } else {
                                 replicationCount++;
                             }
+                        } catch (NotBoundException e) {
+                            System.err.printf("Could not connect to DataNode %d, continuing anyways\n", node.getId());
                         } catch (RemoteException e) {
                             // ignore
                         }
@@ -120,11 +132,10 @@ public class Client
 
                     blockIndex++;
                 }
-                dataInputStream.close();
 
+                dataInputStream.close();
             } catch (IOException e) {
                 System.err.println("Failed to find or read file");
-                return;
             }
 
             try {
@@ -132,21 +143,21 @@ public class Client
 
                 if(response.getStatus() != Operations.StatusCode.OK) {
                     System.err.println(getErrorMessage(response.getStatus()));
-                    return;
                 }
             } catch (RemoteException e) {
                 System.err.println("Failed to close file");
-                return;
             }
-
-            System.out.printf("Successfully wrote local file (%s) to remote file (%s)\n",
-                    localFilename, remoteFilename);
         } catch (InvalidProtocolBufferException e) {
+            System.err.println("Protobuf error");
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     public void GetFile(String remoteFilename, String localFilename) {
+        System.out.printf("Going to read remote file (%s) to local file (%s)\n",
+                remoteFilename, localFilename);
+
         try {
             File outputFile;
             FileOutputStream outputStream;
@@ -165,10 +176,12 @@ public class Client
 
                 if(response.getStatus() != Operations.StatusCode.OK) {
                     System.err.println(getErrorMessage(response.getStatus()));
+                    outputStream.close();
                     return;
                 }
             } catch (RemoteException e) {
                 System.err.println("Failed to open remote file for reading");
+                outputStream.close();
                 return;
             }
 
@@ -248,15 +261,10 @@ public class Client
 
                 if(response.getStatus() != Operations.StatusCode.OK) {
                     System.err.println(getErrorMessage(response.getStatus()));
-                    return;
                 }
             } catch (RemoteException e) {
                 System.err.println("Failed to close remote file for reading");
-                return;
             }
-
-            System.out.printf("Successfully read remote file (%s) to local file (%s)\n",
-                    remoteFilename, localFilename);
         } catch (InvalidProtocolBufferException e) {
             System.err.println("Protobuf error");
         } catch (IOException e) {
@@ -369,6 +377,12 @@ public class Client
                 try{
                     localFilename = Split_Commands[1];
                     remoteFilename = Split_Commands.length > 2 ? Split_Commands[2] : localFilename;
+
+                    if(localFilename.endsWith("/") || remoteFilename.contains("/")) {
+                        System.err.println("Directory operations are not supported ('/' in filename)");
+                        continue;
+                    }
+
                     Me.PutFile(localFilename, remoteFilename);
                 }catch(ArrayIndexOutOfBoundsException e){
                     System.out.println("Please type 'help' for instructions");
