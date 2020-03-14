@@ -77,6 +77,7 @@ public class DataNode implements IDataNode {
                     localRegistry.unbind(nodeName);
                 } catch (Exception e) {
                     // error will not occur
+                    e.printStackTrace();
                 }
             }));
 

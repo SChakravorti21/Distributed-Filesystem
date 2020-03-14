@@ -31,9 +31,11 @@ public class Client
                 localFilename, remoteFilename);
 
         try {
+            InputStream input;
             DataInputStream dataInputStream;
 
-            try (InputStream input = new FileInputStream(localFilename)) {
+            try {
+                input = new FileInputStream(localFilename);
                 dataInputStream = new DataInputStream(input);
             } catch (IOException e) {
                 System.err.println("Failed to open local file for reading");
@@ -240,7 +242,7 @@ public class Client
                             break;  // only need to successfully read from one node
                         }
                     } catch (RemoteException | NotBoundException e) {
-                        // ignore
+                        //e.printStackTrace();
                     }
                 }
 

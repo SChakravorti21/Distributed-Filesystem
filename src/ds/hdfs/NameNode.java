@@ -197,6 +197,7 @@ public class NameNode implements INameNode {
                                 && blockInfo.blockNumber == request.getBlockNumber())
                         .map(blockInfo -> blockInfo.node)
                         .filter(node -> activeNodes.containsKey(node.id))
+                        .distinct()
                         .map(NameNode::convertDataNodeToProto)
                         .collect(Collectors.toList());
 
