@@ -1,8 +1,11 @@
 package ds.hdfs;
 
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.MapEntry;
 
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -23,8 +26,11 @@ public class NameNode implements INameNode {
     // to be considered dead
     private static final long HEARTBEAT_THRESHOLD = 1000;
 
+    private static String STATE_CACHE_FILE = "data/nn_state.txt";
+
     // We use the registry to contact DataNodes?
     public static final int REGISTRY_PORT = 1099;
+
 
     // NameNode's properties and locks
     private String ipAddress;
@@ -41,7 +47,7 @@ public class NameNode implements INameNode {
 
     // Tracking file information, such what files are available,
     // whether they're being written to, and which nodes store chunks
-    private Map<String, FileStatus> fileStatuses = new HashMap<>();
+    private Map<String, FileStatus> fileStatuses;
     private Set<DataNodeBlockInfo> blockInfoList = new HashSet<>();
 
     public NameNode(String ipAddress, int portNumber, String name, int replicationFactor) {
@@ -49,22 +55,13 @@ public class NameNode implements INameNode {
         this.portNumber = portNumber;
         this.identifier = name;
         this.replicationFactor = replicationFactor;
+        this.fileStatuses = loadState(STATE_CACHE_FILE);
 
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                long currentTime = System.currentTimeMillis();
-                System.out.println(activeNodes.toString());
-
-                synchronized (nodeLock) {
-                    activeNodes = activeNodes.keySet()
-                            .stream()
-                            .filter(id -> currentTime - activeNodes.get(id).latestHeartbeat < HEARTBEAT_THRESHOLD)
-                            .collect(Collectors.toConcurrentMap(
-                                    Function.identity(),  // name itself is the key
-                                    activeNodes::get
-                            ));
-                }
+                removeDeadNodes();
+                persistState(STATE_CACHE_FILE);
             }
         }, SCAN_INTERVAL, SCAN_INTERVAL);
     }
@@ -237,16 +234,10 @@ public class NameNode implements INameNode {
 
     public byte[] list() {
         synchronized (fileLock) {
-            List<String> filenames = blockInfoList
-                    .stream()
-                    .map(block -> block.filename)
-                    .distinct()
-                    .collect(Collectors.toList());
-
             return Operations.ListResponse
                     .newBuilder()
                     .setStatus(Operations.StatusCode.OK)
-                    .addAllFilenames(filenames)
+                    .addAllFilenames(fileStatuses.keySet())
                     .build()
                     .toByteArray();
         }
@@ -340,6 +331,54 @@ public class NameNode implements INameNode {
                 .build();
     }
 
+    private void persistState(String path) {
+        synchronized (fileLock) {
+            try {
+                Files.createDirectories(Paths.get(path).getParent());
+                OutputStream stateStream = new FileOutputStream(path);
+
+                for (Map.Entry<String, FileStatus> entry : fileStatuses.entrySet()) {
+                    String line = entry.getKey() + "," + entry.getValue().maxBlockNumber + "\n";
+                    stateStream.write(line.getBytes());
+                }
+
+                stateStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private Map<String, FileStatus> loadState(String path) {
+        try (Stream<String> stateStream = Files.lines(Paths.get(path))) {
+            return stateStream
+                    .filter(line -> line.contains(","))
+                    .map(line -> line.split(","))
+                    .collect(Collectors.toMap(
+                            line -> line[0],  // key is filename, value is maxBlockNumber
+                            line -> new FileStatus(Integer.parseInt(line[1]))
+                    ));
+        } catch (IOException e) {
+            return new HashMap<>();
+        }
+    }
+
+    private void removeDeadNodes() {
+        synchronized (nodeLock) {
+            long currentTime = System.currentTimeMillis();
+
+            activeNodes = activeNodes.keySet()
+                    .stream()
+                    .filter(id -> currentTime - activeNodes.get(id).latestHeartbeat < HEARTBEAT_THRESHOLD)
+                    .collect(Collectors.toConcurrentMap(
+                            Function.identity(),  // name itself is the key
+                            activeNodes::get
+                    ));
+
+            System.out.println(Arrays.toString(activeNodes.values().toArray()));
+        }
+    }
+
     public static class DataNode {
         String ip;
         int port;
@@ -368,6 +407,11 @@ public class NameNode implements INameNode {
         @Override
         public int hashCode() {
             return Integer.hashCode(this.id);
+        }
+
+        @Override
+        public String toString() {
+            return String.format("IDataNode-%d (%s:%d)", this.id, this.ip, this.port);
         }
     }
 
@@ -411,6 +455,12 @@ public class NameNode implements INameNode {
         Operations.FileMode openMode;
         long maxBlockNumber;
         int openHandles;
+
+        FileStatus(long maxBlock) {
+            openMode = null;
+            openHandles = 0;
+            maxBlockNumber = maxBlock;
+        }
 
         FileStatus(Operations.FileMode mode, int handles) {
             openMode = mode;
