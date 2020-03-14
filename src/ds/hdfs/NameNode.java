@@ -3,8 +3,6 @@ package ds.hdfs;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -188,6 +186,13 @@ public class NameNode implements INameNode {
 
         synchronized (nodeLock) {
             synchronized (fileLock) {
+                // Check if this is a valid block number for the file
+                long maxBlockNumber = fileStatuses.get(request.getFilename()).maxBlockNumber;
+
+                if(request.getBlockNumber() > maxBlockNumber) {
+                    return createGetBlockLocationsResponse(Operations.StatusCode.E_NOBLK);
+                }
+
                 // For the client's convenience, also filter
                 // by active nodes so that client has higher likelihood
                 // of contacting a live DataNode.
@@ -200,12 +205,6 @@ public class NameNode implements INameNode {
                         .distinct()
                         .map(NameNode::convertDataNodeToProto)
                         .collect(Collectors.toList());
-
-                // If no such nodes are found, we won't be able to
-                // tell the client which DataNodes to contact anyways
-                if (availableNodes.size() == 0) {
-                    return createGetBlockLocationsResponse(Operations.StatusCode.E_NOBLK, new ArrayList<>());
-                }
 
                 return createGetBlockLocationsResponse(
                         Operations.StatusCode.OK,
@@ -253,13 +252,6 @@ public class NameNode implements INameNode {
         }
     }
 
-    // Datanode <-> Namenode interaction methods
-
-    public byte[] blockReport(byte[] inp) throws RemoteException {
-        return null;
-    }
-
-
     public void heartBeat(byte[] req) {
         Operations.Heartbeat heartbeat;
 
@@ -287,19 +279,31 @@ public class NameNode implements INameNode {
                 // Map all the DataNode's blocks to a flat list
                 // so that we can take the union of it with the
                 // existing block info stored on NameNode.
-                List<DataNodeBlockInfo> nodeBlockInfoList = heartbeat
+                Stream<DataNodeBlockInfo> nodeBlockInfoList = heartbeat
                         .getAvailableFileBlocksList()
                         .stream()
-                        .map(fileBlock -> new DataNodeBlockInfo(
-                                        fileBlock.getFilename(),
-                                        fileBlock.getFileBlock(),
-                                        new DataNode(heartbeat.getNode())))
-                        .collect(Collectors.toList());
+                        .map(fileBlock -> {
+                            // Track the total number of blocks for each file.
+                            // If we see a block number greater than the max known for a file,
+                            // that means a Client was successfully able to write data for
+                            // that block to the node.
+                            fileStatuses.putIfAbsent(fileBlock.getFilename(), new FileStatus(null, 0));
+                            FileStatus status = fileStatuses.get(fileBlock.getFilename());
+                            status.maxBlockNumber = Long.max(status.maxBlockNumber, fileBlock.getFileBlock());
 
-                blockInfoList.addAll(nodeBlockInfoList);
+                            return new DataNodeBlockInfo(
+                                    fileBlock.getFilename(),
+                                    fileBlock.getFileBlock(),
+                                    new DataNode(heartbeat.getNode())
+                            );
+                        });
 
-                nodeBlockInfoList.forEach(blockInfo ->
-                        fileStatuses.putIfAbsent(blockInfo.filename, new FileStatus(null, 0)));
+                Stream<DataNodeBlockInfo> difference = blockInfoList
+                        .stream()
+                        .filter(blockInfo -> !blockInfo.node.equals(node));
+
+                blockInfoList = Stream.concat(nodeBlockInfoList, difference)
+                        .collect(Collectors.toSet());
             }
         }
     }
@@ -313,7 +317,7 @@ public class NameNode implements INameNode {
     }
 
     private static byte[] createGetBlockLocationsResponse(Operations.StatusCode status) {
-        return createGetBlockLocationsResponse(status, null);
+        return createGetBlockLocationsResponse(status, new ArrayList<>());
     }
 
     private static byte[] createGetBlockLocationsResponse(
@@ -360,6 +364,11 @@ public class NameNode implements INameNode {
         public boolean equals(Object obj) {
             return obj instanceof DataNode && this.id == ((DataNode) obj).id;
         }
+
+        @Override
+        public int hashCode() {
+            return Integer.hashCode(this.id);
+        }
     }
 
     /**
@@ -400,11 +409,13 @@ public class NameNode implements INameNode {
 
     public static class FileStatus {
         Operations.FileMode openMode;
+        long maxBlockNumber;
         int openHandles;
 
         FileStatus(Operations.FileMode mode, int handles) {
             openMode = mode;
             openHandles = handles;
+            maxBlockNumber = 0;
         }
     }
 

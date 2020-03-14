@@ -1,5 +1,4 @@
 package ds.hdfs;
-import java.net.UnknownHostException;
 import java.rmi.*;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -26,7 +25,7 @@ public class Client
         //nn_details contain NN details in the format Server;IP;Port
     }
 
-    public void PutFile(String localFilename, String remoteFilename) {
+    public void putFile(String localFilename, String remoteFilename) {
         System.out.printf("Going to write local file (%s) to remote file (%s)\n",
                 localFilename, remoteFilename);
 
@@ -150,7 +149,7 @@ public class Client
         }
     }
 
-    public void GetFile(String remoteFilename, String localFilename) {
+    public void getFile(String remoteFilename, String localFilename) {
         System.out.printf("Going to read remote file (%s) to local file (%s)\n",
                 remoteFilename, localFilename);
 
@@ -262,7 +261,7 @@ public class Client
         }
     }
 
-    public void List() {
+    public void list() {
         try {
             Operations.ListResponse response = Operations.ListResponse.parseFrom(nameNode.list());
             for (String filename : response.getFilenamesList()) {
@@ -344,58 +343,61 @@ public class Client
     public static void main(String[] args) throws IOException, NotBoundException {
         // To read config file and Connect to NameNode
         //Intitalize the Client
-        Client Me = new Client();
+        Client client = new Client();
         System.out.println("Welcome to HDFS!!");
-        Scanner Scan = new Scanner(System.in);
+        Scanner scanner = new Scanner(System.in);
+
         while(true)
         {
             //Scanner, prompt and then call the functions according to the command
             System.out.print("$> "); //Prompt
-            String Command = Scan.nextLine();
-            String[] Split_Commands = Command.split(" ");
+            String command = scanner.nextLine();
+            String[] splitCommands = command.split(" ");
 
-            if(Split_Commands[0].equals("help"))
+            if(splitCommands[0].equals("help"))
             {
                 System.out.println("The following are the Supported Commands");
                 System.out.println("1. put filename ## To put a file in HDFS");
                 System.out.println("2. get filename ## To get a file in HDFS"); System.out.println("2. list ## To get the list of files in HDFS");
             }
-            else if(Split_Commands[0].equals("put"))  // put Filename
+            else if(splitCommands[0].equals("put"))  // put Filename
             {
                 //Put file into HDFS
                 String localFilename, remoteFilename;
-                try{
-                    localFilename = Split_Commands[1];
-                    remoteFilename = Split_Commands.length > 2 ? Split_Commands[2] : localFilename;
+                try {
+                    localFilename = splitCommands[1];
+                    remoteFilename = splitCommands.length > 2 ? splitCommands[2] : localFilename;
 
                     if(localFilename.endsWith("/") || remoteFilename.contains("/")) {
                         System.err.println("Directory operations are not supported ('/' in filename)");
                         continue;
                     }
 
-                    Me.PutFile(localFilename, remoteFilename);
-                }catch(ArrayIndexOutOfBoundsException e){
+                    client.putFile(localFilename, remoteFilename);
+                } catch(ArrayIndexOutOfBoundsException e) {
                     System.out.println("Please type 'help' for instructions");
-                    continue;
                 }
             }
-            else if(Split_Commands[0].equals("get"))
+            else if(splitCommands[0].equals("get"))
             {
                 //Get file from HDFS
                 String localFilename, remoteFilename;
-                try{
-                    remoteFilename = Split_Commands[1];
-                    localFilename = Split_Commands.length > 2 ? Split_Commands[2] : remoteFilename;
-                    Me.GetFile(remoteFilename, localFilename);
-                }catch(ArrayIndexOutOfBoundsException e){
+                try {
+                    remoteFilename = splitCommands[1];
+                    localFilename = splitCommands.length > 2 ? splitCommands[2] : remoteFilename;
+                    client.getFile(remoteFilename, localFilename);
+                } catch(ArrayIndexOutOfBoundsException e) {
                     System.out.println("Please type 'help' for instructions");
-                    continue;
                 }
             }
-            else if(Split_Commands[0].equals("list"))
+            else if(splitCommands[0].equals("list"))
             {
                 //Get list of files in HDFS
-                Me.List();
+                client.list();
+            }
+            else if(splitCommands[0].equals("quit") || splitCommands[0].equals("exit"))
+            {
+                break;
             }
             else
             {
