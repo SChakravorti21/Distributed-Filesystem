@@ -82,7 +82,6 @@ public class Client
             // Open file and put into input stream
             try {
                 int blockIndex = 0; // block number
-                Map<Integer, IDataNode> stubs = new HashMap<>();
 
                 // We break out of the loop when we reach the end of the file.
                 // The while condition prevents us from putting the file
@@ -101,20 +100,15 @@ public class Client
                         Operations.DataNode node = nodeList.get(nodeIndex);
 
                         try {
-                            if(!stubs.containsKey(node.getId())) {
-                                stubs.put(node.getId(), connectDataNode(
-                                        node.getIp(),
-                                        node.getPort(),
-                                        "IDataNode-" + node.getId()
-                                ));
-                            }
-
                             Operations.ReadWriteResponse writeResponse = doReadWrite(
                                     remoteFilename,
                                     blockIndex,
                                     ByteString.copyFrom(curr, 0, numRead),
                                     Operations.FileMode.WRITE,
-                                    stubs.get(node.getId())
+                                    connectDataNode(
+                                        node.getIp(),
+                                        node.getPort(),
+                                        "IDataNode-" + node.getId())
                             );
 
                             if(writeResponse.getStatus() != Operations.StatusCode.OK) {
@@ -188,7 +182,6 @@ public class Client
             }
 
             int blockNumber = 0;
-            Map<Integer, IDataNode> stubs = new HashMap<>();
 
             while(true) {
                 byte[] contents = null;
@@ -221,20 +214,15 @@ public class Client
 
                 for(Operations.DataNode node : locationsResponse.getNodesList()) {
                     try {
-                        if(!stubs.containsKey(node.getId())) {
-                            stubs.put(node.getId(), connectDataNode(
-                                    node.getIp(),
-                                    node.getPort(),
-                                    "IDataNode-" + node.getId()
-                            ));
-                        }
-
                         Operations.ReadWriteResponse readResponse = doReadWrite(
                                 remoteFilename,
                                 blockNumber,
                                 null,
                                 Operations.FileMode.READ,
-                                stubs.get(node.getId())
+                                connectDataNode(
+                                    node.getIp(),
+                                    node.getPort(),
+                                    "IDataNode-" + node.getId())
                         );
 
                         if(readResponse.getStatus() == Operations.StatusCode.OK) {
@@ -242,7 +230,7 @@ public class Client
                             break;  // only need to successfully read from one node
                         }
                     } catch (RemoteException | NotBoundException e) {
-                        //e.printStackTrace();
+                        // e.printStackTrace();
                     }
                 }
 

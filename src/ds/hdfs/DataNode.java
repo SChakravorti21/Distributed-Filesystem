@@ -68,19 +68,19 @@ public class DataNode implements IDataNode {
             DataNode node = new DataNode(id, ip, registryPort);
             IDataNode stub = (IDataNode) UnicastRemoteObject.exportObject(node, stubPort);
             String nodeName = String.format("IDataNode-%d", id);
-            Registry localRegistry = bindStub(nodeName, stub);
+            Registry localRegistry = bindStub(nodeName, stub, registryPort);
 
             // We need to unbind the DataNode from the registry
             // in case it needs to restart (in which case it will have
             // the same name and the registry will refuse to bind it)
-//            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-//                try {
-//                    localRegistry.unbind(nodeName);
-//                } catch (Exception e) {
-//                    // error will not occur
-//                    e.printStackTrace();
-//                }
-//            }));
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                try {
+                    localRegistry.unbind(nodeName);
+                } catch (Exception e) {
+                    // error will not occur
+                    e.printStackTrace();
+                }
+            }));
 
             System.out.println(String.format("DataNode ready! (IP %s, PORT %d)", ip, stubPort));
         } catch (AlreadyBoundException e) {
@@ -96,14 +96,14 @@ public class DataNode implements IDataNode {
     }
 
 
-    private static Registry bindStub(String nodeName, IDataNode stub)
+    private static Registry bindStub(String nodeName, IDataNode stub, int port)
             throws AlreadyBoundException, RemoteException {
         try {
-            Registry localRegistry = LocateRegistry.getRegistry(NameNode.REGISTRY_PORT);
+            Registry localRegistry = LocateRegistry.getRegistry(port);
             localRegistry.bind(nodeName, stub);
             return localRegistry;
         } catch (ConnectException e) {
-            Registry localRegistry = LocateRegistry.createRegistry(NameNode.REGISTRY_PORT);
+            Registry localRegistry = LocateRegistry.createRegistry(port);
             localRegistry.bind(nodeName, stub);
             return localRegistry;
         }
