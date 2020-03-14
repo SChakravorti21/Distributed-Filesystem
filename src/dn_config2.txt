@@ -1,3 +1,4 @@
 ID=2
 IP=ls.cs.rutgers.edu
-PORT=2006
+REGISTRY-PORT=2007
+STUB-PORT=2008

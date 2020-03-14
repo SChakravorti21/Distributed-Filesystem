@@ -20,16 +20,16 @@ public class DataNode implements IDataNode {
     private static final long HEARTBEAT_INTERVAL = 250;
 
     private String ip;
-    private int port;
     private int id;
+    private int registryPort;
     private INameNode nameNode;
     private long failedHeartbeats = 0;
     private Timer timer = new Timer();
 
-    public DataNode(int id, String ip, int port) throws IOException, NotBoundException {
+    public DataNode(int id, String ip, int registryPort) throws IOException, NotBoundException {
         this.id = id;
         this.ip = ip;
-        this.port = port;
+        this.registryPort = registryPort;
         this.nameNode = Utils.connectNameNode();
 
         timer.scheduleAtFixedRate(new TimerTask() {
@@ -61,30 +61,31 @@ public class DataNode implements IDataNode {
             Map<String, String> config = Utils.parseConfigFile(args[0]);
             int id = Integer.parseInt(config.get("ID"));
             String ip = config.get("IP");
-            int port = Integer.parseInt(config.get("PORT"));
+            int registryPort = Integer.parseInt(config.get("REGISTRY-PORT"));
+            int stubPort = Integer.parseInt(config.get("STUB-PORT"));
 
             // Bind remote object's stub in registry
-            DataNode node = new DataNode(id, ip, port);
-            IDataNode stub = (IDataNode) UnicastRemoteObject.exportObject(node, port);
+            DataNode node = new DataNode(id, ip, registryPort);
+            IDataNode stub = (IDataNode) UnicastRemoteObject.exportObject(node, stubPort);
             String nodeName = String.format("IDataNode-%d", id);
             Registry localRegistry = bindStub(nodeName, stub);
 
             // We need to unbind the DataNode from the registry
             // in case it needs to restart (in which case it will have
             // the same name and the registry will refuse to bind it)
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                try {
-                    localRegistry.unbind(nodeName);
-                } catch (Exception e) {
-                    // error will not occur
-                    e.printStackTrace();
-                }
-            }));
+//            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+//                try {
+//                    localRegistry.unbind(nodeName);
+//                } catch (Exception e) {
+//                    // error will not occur
+//                    e.printStackTrace();
+//                }
+//            }));
 
-            System.out.println(String.format("DataNode ready! (IP %s, PORT %d)", ip, port));
+            System.out.println(String.format("DataNode ready! (IP %s, PORT %d)", ip, stubPort));
         } catch (AlreadyBoundException e) {
             e.printStackTrace();
-            System.err.println("DataNode is already bound to the specified port");
+            System.err.println("DataNode is already bound to the specified registryPort");
         } catch (NotBoundException e) {
             e.printStackTrace();
             System.err.println("NameNode is not up");
@@ -236,7 +237,7 @@ public class DataNode implements IDataNode {
                             .newBuilder()
                             .setId(id)
                             .setIp(ip)
-                            .setPort(port)
+                            .setPort(registryPort)
                             .build())
                 .addAllAvailableFileBlocks(blocks)
                 .build()

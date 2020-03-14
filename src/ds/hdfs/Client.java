@@ -288,7 +288,7 @@ public class Client
     }
 
     private static IDataNode connectDataNode(String ip, int port, String name) throws RemoteException, NotBoundException {
-        Registry serverRegistry = LocateRegistry.getRegistry(ip, NameNode.REGISTRY_PORT);
+        Registry serverRegistry = LocateRegistry.getRegistry(ip, port);
         return (IDataNode) serverRegistry.lookup(name);
     }
 
