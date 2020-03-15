@@ -1,16 +1,15 @@
-CLASSPATH=".:build:libs/protobuf-java-3.11.4.jar"
+CLASSPATH=".:build:libs/*"
 
 clean:
 	rm -rf bin/
 
 build: clean
 	javac -d build -g -sourcepath src -cp $(CLASSPATH) \
-		src/ds/hdfs/NameNode.java \
-		src/ds/hdfs/DataNode.java \
-		src/ds/hdfs/Client.java
+	    --add-modules=java.xml.ws.annotation \
+	    src/ds/hdfs/proto/NameNodeServer.java
 
 run_name_node:
-	java -cp ${CLASSPATH} ds.hdfs.NameNode
+	java -cp ${CLASSPATH} ds.hdfs.proto.NameNodeServer
 
 run_data_node:
 	java -cp ${CLASSPATH} ds.hdfs.DataNode ${CONFIG}

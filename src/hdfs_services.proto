@@ -1,0 +1,39 @@
+syntax = "proto2";
+
+import "hdfs.proto";
+import "google/protobuf/empty.proto";
+
+package hdfs;
+option java_multiple_files = true;
+option java_package = "ds.hdfs.proto";
+
+service INameNode {
+    // Allows a client to open a file for reading or writing
+    rpc openFile(OpenCloseRequest) returns (OpenCloseResponse) {}
+
+    // Allows client to indicate to NameNode that it is done
+    // reading or writing
+    rpc closeFile(OpenCloseRequest) returns (OpenCloseResponse) {}
+
+    // Allows a client to query which DataNodes store a
+    // given file block
+    rpc getBlockLocations(GetBlockLocationsRequest) returns (GetBlockLocationsResponse) {}
+
+    // Used by client to designate which DataNodes should store
+    // a particular file block
+    rpc assignBlock(AssignBlockRequest) returns (AssignBlockResponse) {}
+
+    // Lists the files stored in HDFS (regardless of availability)
+    rpc list(google.protobuf.Empty) returns (ListResponse) {}
+
+    // For DataNode to send NameNode heartbeats
+    rpc heartbeat(Heartbeat) returns (google.protobuf.Empty) {}
+}
+
+service IDataNode {
+    // For client to read blocks from DataNode
+    rpc readBlock(ReadWriteRequest) returns (ReadWriteResponse) {}
+
+    // For client to write blocks to DataNode
+    rpc writeBlock(ReadWriteRequest) returns (ReadWriteResponse) {}
+}
