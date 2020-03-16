@@ -1,10 +1,9 @@
-package ds.hdfs.proto;
+package ds.hdfs;
 
 import io.grpc.BindableService;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 
-import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 public abstract class AbstractNodeServer {

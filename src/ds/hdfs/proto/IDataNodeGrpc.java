@@ -1,18 +1,11 @@
 package ds.hdfs.proto;
 
 import static io.grpc.MethodDescriptor.generateFullMethodName;
-import static io.grpc.stub.ClientCalls.asyncBidiStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncClientStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncServerStreamingCall;
 import static io.grpc.stub.ClientCalls.asyncUnaryCall;
 import static io.grpc.stub.ClientCalls.blockingServerStreamingCall;
 import static io.grpc.stub.ClientCalls.blockingUnaryCall;
 import static io.grpc.stub.ClientCalls.futureUnaryCall;
-import static io.grpc.stub.ServerCalls.asyncBidiStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncClientStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncServerStreamingCall;
 import static io.grpc.stub.ServerCalls.asyncUnaryCall;
-import static io.grpc.stub.ServerCalls.asyncUnimplementedStreamingCall;
 import static io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall;
 
 /**
@@ -27,29 +20,29 @@ public final class IDataNodeGrpc {
   public static final String SERVICE_NAME = "hdfs.IDataNode";
 
   // Static method descriptors that strictly reflect the proto.
-  private static volatile io.grpc.MethodDescriptor<ds.hdfs.Operations.ReadWriteRequest,
-      ds.hdfs.Operations.ReadWriteResponse> getReadBlockMethod;
+  private static volatile io.grpc.MethodDescriptor<Operations.ReadWriteRequest,
+      Operations.ReadWriteResponse> getReadBlockMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "readBlock",
-      requestType = ds.hdfs.Operations.ReadWriteRequest.class,
-      responseType = ds.hdfs.Operations.ReadWriteResponse.class,
+      requestType = Operations.ReadWriteRequest.class,
+      responseType = Operations.ReadWriteResponse.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<ds.hdfs.Operations.ReadWriteRequest,
-      ds.hdfs.Operations.ReadWriteResponse> getReadBlockMethod() {
-    io.grpc.MethodDescriptor<ds.hdfs.Operations.ReadWriteRequest, ds.hdfs.Operations.ReadWriteResponse> getReadBlockMethod;
+  public static io.grpc.MethodDescriptor<Operations.ReadWriteRequest,
+      Operations.ReadWriteResponse> getReadBlockMethod() {
+    io.grpc.MethodDescriptor<Operations.ReadWriteRequest, Operations.ReadWriteResponse> getReadBlockMethod;
     if ((getReadBlockMethod = IDataNodeGrpc.getReadBlockMethod) == null) {
       synchronized (IDataNodeGrpc.class) {
         if ((getReadBlockMethod = IDataNodeGrpc.getReadBlockMethod) == null) {
           IDataNodeGrpc.getReadBlockMethod = getReadBlockMethod =
-              io.grpc.MethodDescriptor.<ds.hdfs.Operations.ReadWriteRequest, ds.hdfs.Operations.ReadWriteResponse>newBuilder()
+              io.grpc.MethodDescriptor.<Operations.ReadWriteRequest, Operations.ReadWriteResponse>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "readBlock"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  ds.hdfs.Operations.ReadWriteRequest.getDefaultInstance()))
+                  Operations.ReadWriteRequest.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  ds.hdfs.Operations.ReadWriteResponse.getDefaultInstance()))
+                  Operations.ReadWriteResponse.getDefaultInstance()))
               .setSchemaDescriptor(new IDataNodeMethodDescriptorSupplier("readBlock"))
               .build();
         }
@@ -58,29 +51,29 @@ public final class IDataNodeGrpc {
     return getReadBlockMethod;
   }
 
-  private static volatile io.grpc.MethodDescriptor<ds.hdfs.Operations.ReadWriteRequest,
-      ds.hdfs.Operations.ReadWriteResponse> getWriteBlockMethod;
+  private static volatile io.grpc.MethodDescriptor<Operations.ReadWriteRequest,
+      Operations.ReadWriteResponse> getWriteBlockMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "writeBlock",
-      requestType = ds.hdfs.Operations.ReadWriteRequest.class,
-      responseType = ds.hdfs.Operations.ReadWriteResponse.class,
+      requestType = Operations.ReadWriteRequest.class,
+      responseType = Operations.ReadWriteResponse.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<ds.hdfs.Operations.ReadWriteRequest,
-      ds.hdfs.Operations.ReadWriteResponse> getWriteBlockMethod() {
-    io.grpc.MethodDescriptor<ds.hdfs.Operations.ReadWriteRequest, ds.hdfs.Operations.ReadWriteResponse> getWriteBlockMethod;
+  public static io.grpc.MethodDescriptor<Operations.ReadWriteRequest,
+      Operations.ReadWriteResponse> getWriteBlockMethod() {
+    io.grpc.MethodDescriptor<Operations.ReadWriteRequest, Operations.ReadWriteResponse> getWriteBlockMethod;
     if ((getWriteBlockMethod = IDataNodeGrpc.getWriteBlockMethod) == null) {
       synchronized (IDataNodeGrpc.class) {
         if ((getWriteBlockMethod = IDataNodeGrpc.getWriteBlockMethod) == null) {
           IDataNodeGrpc.getWriteBlockMethod = getWriteBlockMethod =
-              io.grpc.MethodDescriptor.<ds.hdfs.Operations.ReadWriteRequest, ds.hdfs.Operations.ReadWriteResponse>newBuilder()
+              io.grpc.MethodDescriptor.<Operations.ReadWriteRequest, Operations.ReadWriteResponse>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "writeBlock"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  ds.hdfs.Operations.ReadWriteRequest.getDefaultInstance()))
+                  Operations.ReadWriteRequest.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  ds.hdfs.Operations.ReadWriteResponse.getDefaultInstance()))
+                  Operations.ReadWriteResponse.getDefaultInstance()))
               .setSchemaDescriptor(new IDataNodeMethodDescriptorSupplier("writeBlock"))
               .build();
         }
@@ -142,8 +135,8 @@ public final class IDataNodeGrpc {
      * For client to read blocks from DataNode
      * </pre>
      */
-    public void readBlock(ds.hdfs.Operations.ReadWriteRequest request,
-        io.grpc.stub.StreamObserver<ds.hdfs.Operations.ReadWriteResponse> responseObserver) {
+    public void readBlock(Operations.ReadWriteRequest request,
+                          io.grpc.stub.StreamObserver<Operations.ReadWriteResponse> responseObserver) {
       asyncUnimplementedUnaryCall(getReadBlockMethod(), responseObserver);
     }
 
@@ -152,8 +145,8 @@ public final class IDataNodeGrpc {
      * For client to write blocks to DataNode
      * </pre>
      */
-    public void writeBlock(ds.hdfs.Operations.ReadWriteRequest request,
-        io.grpc.stub.StreamObserver<ds.hdfs.Operations.ReadWriteResponse> responseObserver) {
+    public void writeBlock(Operations.ReadWriteRequest request,
+                           io.grpc.stub.StreamObserver<Operations.ReadWriteResponse> responseObserver) {
       asyncUnimplementedUnaryCall(getWriteBlockMethod(), responseObserver);
     }
 
@@ -163,15 +156,15 @@ public final class IDataNodeGrpc {
             getReadBlockMethod(),
             asyncUnaryCall(
               new MethodHandlers<
-                ds.hdfs.Operations.ReadWriteRequest,
-                ds.hdfs.Operations.ReadWriteResponse>(
+                Operations.ReadWriteRequest,
+                Operations.ReadWriteResponse>(
                   this, METHODID_READ_BLOCK)))
           .addMethod(
             getWriteBlockMethod(),
             asyncUnaryCall(
               new MethodHandlers<
-                ds.hdfs.Operations.ReadWriteRequest,
-                ds.hdfs.Operations.ReadWriteResponse>(
+                Operations.ReadWriteRequest,
+                Operations.ReadWriteResponse>(
                   this, METHODID_WRITE_BLOCK)))
           .build();
     }
@@ -196,8 +189,8 @@ public final class IDataNodeGrpc {
      * For client to read blocks from DataNode
      * </pre>
      */
-    public void readBlock(ds.hdfs.Operations.ReadWriteRequest request,
-        io.grpc.stub.StreamObserver<ds.hdfs.Operations.ReadWriteResponse> responseObserver) {
+    public void readBlock(Operations.ReadWriteRequest request,
+                          io.grpc.stub.StreamObserver<Operations.ReadWriteResponse> responseObserver) {
       asyncUnaryCall(
           getChannel().newCall(getReadBlockMethod(), getCallOptions()), request, responseObserver);
     }
@@ -207,8 +200,8 @@ public final class IDataNodeGrpc {
      * For client to write blocks to DataNode
      * </pre>
      */
-    public void writeBlock(ds.hdfs.Operations.ReadWriteRequest request,
-        io.grpc.stub.StreamObserver<ds.hdfs.Operations.ReadWriteResponse> responseObserver) {
+    public void writeBlock(Operations.ReadWriteRequest request,
+                           io.grpc.stub.StreamObserver<Operations.ReadWriteResponse> responseObserver) {
       asyncUnaryCall(
           getChannel().newCall(getWriteBlockMethod(), getCallOptions()), request, responseObserver);
     }
@@ -233,7 +226,7 @@ public final class IDataNodeGrpc {
      * For client to read blocks from DataNode
      * </pre>
      */
-    public ds.hdfs.Operations.ReadWriteResponse readBlock(ds.hdfs.Operations.ReadWriteRequest request) {
+    public Operations.ReadWriteResponse readBlock(Operations.ReadWriteRequest request) {
       return blockingUnaryCall(
           getChannel(), getReadBlockMethod(), getCallOptions(), request);
     }
@@ -243,7 +236,7 @@ public final class IDataNodeGrpc {
      * For client to write blocks to DataNode
      * </pre>
      */
-    public ds.hdfs.Operations.ReadWriteResponse writeBlock(ds.hdfs.Operations.ReadWriteRequest request) {
+    public Operations.ReadWriteResponse writeBlock(Operations.ReadWriteRequest request) {
       return blockingUnaryCall(
           getChannel(), getWriteBlockMethod(), getCallOptions(), request);
     }
@@ -268,8 +261,8 @@ public final class IDataNodeGrpc {
      * For client to read blocks from DataNode
      * </pre>
      */
-    public com.google.common.util.concurrent.ListenableFuture<ds.hdfs.Operations.ReadWriteResponse> readBlock(
-        ds.hdfs.Operations.ReadWriteRequest request) {
+    public com.google.common.util.concurrent.ListenableFuture<Operations.ReadWriteResponse> readBlock(
+        Operations.ReadWriteRequest request) {
       return futureUnaryCall(
           getChannel().newCall(getReadBlockMethod(), getCallOptions()), request);
     }
@@ -279,8 +272,8 @@ public final class IDataNodeGrpc {
      * For client to write blocks to DataNode
      * </pre>
      */
-    public com.google.common.util.concurrent.ListenableFuture<ds.hdfs.Operations.ReadWriteResponse> writeBlock(
-        ds.hdfs.Operations.ReadWriteRequest request) {
+    public com.google.common.util.concurrent.ListenableFuture<Operations.ReadWriteResponse> writeBlock(
+        Operations.ReadWriteRequest request) {
       return futureUnaryCall(
           getChannel().newCall(getWriteBlockMethod(), getCallOptions()), request);
     }
@@ -307,12 +300,12 @@ public final class IDataNodeGrpc {
     public void invoke(Req request, io.grpc.stub.StreamObserver<Resp> responseObserver) {
       switch (methodId) {
         case METHODID_READ_BLOCK:
-          serviceImpl.readBlock((ds.hdfs.Operations.ReadWriteRequest) request,
-              (io.grpc.stub.StreamObserver<ds.hdfs.Operations.ReadWriteResponse>) responseObserver);
+          serviceImpl.readBlock((Operations.ReadWriteRequest) request,
+              (io.grpc.stub.StreamObserver<Operations.ReadWriteResponse>) responseObserver);
           break;
         case METHODID_WRITE_BLOCK:
-          serviceImpl.writeBlock((ds.hdfs.Operations.ReadWriteRequest) request,
-              (io.grpc.stub.StreamObserver<ds.hdfs.Operations.ReadWriteResponse>) responseObserver);
+          serviceImpl.writeBlock((Operations.ReadWriteRequest) request,
+              (io.grpc.stub.StreamObserver<Operations.ReadWriteResponse>) responseObserver);
           break;
         default:
           throw new AssertionError();

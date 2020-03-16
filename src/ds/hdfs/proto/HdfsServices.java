@@ -44,10 +44,10 @@ public final class HdfsServices {
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
-          ds.hdfs.Operations.getDescriptor(),
+          Operations.getDescriptor(),
           com.google.protobuf.EmptyProto.getDescriptor(),
         });
-    ds.hdfs.Operations.getDescriptor();
+    Operations.getDescriptor();
     com.google.protobuf.EmptyProto.getDescriptor();
   }
 

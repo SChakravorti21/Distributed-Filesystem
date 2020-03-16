@@ -1,6 +1,4 @@
-package ds.hdfs.proto;
-
-import ds.hdfs.Utils;
+package ds.hdfs;
 
 import java.util.Map;
 

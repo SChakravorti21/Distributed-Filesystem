@@ -1,7 +1,8 @@
-package ds.hdfs.proto;
+package ds.hdfs;
 
 import com.google.protobuf.Empty;
-import ds.hdfs.Operations;
+import ds.hdfs.proto.INameNodeGrpc;
+import ds.hdfs.proto.Operations;
 import io.grpc.stub.StreamObserver;
 
 import java.io.FileOutputStream;

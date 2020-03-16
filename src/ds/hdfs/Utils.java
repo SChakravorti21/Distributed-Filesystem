@@ -2,16 +2,11 @@ package ds.hdfs;
 
 import ds.hdfs.proto.IDataNodeGrpc;
 import ds.hdfs.proto.INameNodeGrpc;
-import ds.hdfs.proto.NameNodeService;
-import io.grpc.Channel;
 import io.grpc.ManagedChannelBuilder;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.rmi.NotBoundException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -23,12 +18,6 @@ public class Utils {
                         line -> line[0],
                         line -> line[1]
                 ));
-    }
-
-    public static INameNode connectNameNode() throws IOException, NotBoundException {
-        String registryHost = Utils.parseConfigFile("src/nn_config.txt").get("IP");
-        Registry serverRegistry = LocateRegistry.getRegistry(registryHost, NameNode.REGISTRY_PORT);
-        return (INameNode) serverRegistry.lookup("INameNode");
     }
 
     public static INameNodeGrpc.INameNodeBlockingStub getNameNodeStub() throws IOException {

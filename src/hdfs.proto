@@ -1,7 +1,7 @@
 syntax = "proto2";
 
 package hdfs;
-option java_package = "ds.hdfs";
+option java_package = "ds.hdfs.proto";
 option java_outer_classname = "Operations";
 
 enum StatusCode {

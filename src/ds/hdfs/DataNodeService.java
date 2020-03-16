@@ -1,9 +1,10 @@
-package ds.hdfs.proto;
+package ds.hdfs;
 
 import com.google.protobuf.ByteString;
 import ds.hdfs.INameNode;
-import ds.hdfs.Operations;
-import ds.hdfs.Utils;
+import ds.hdfs.proto.Operations;
+import ds.hdfs.proto.IDataNodeGrpc;
+import ds.hdfs.proto.INameNodeGrpc;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 

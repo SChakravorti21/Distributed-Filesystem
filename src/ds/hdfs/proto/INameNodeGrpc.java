@@ -1,18 +1,11 @@
 package ds.hdfs.proto;
 
 import static io.grpc.MethodDescriptor.generateFullMethodName;
-import static io.grpc.stub.ClientCalls.asyncBidiStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncClientStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncServerStreamingCall;
 import static io.grpc.stub.ClientCalls.asyncUnaryCall;
 import static io.grpc.stub.ClientCalls.blockingServerStreamingCall;
 import static io.grpc.stub.ClientCalls.blockingUnaryCall;
 import static io.grpc.stub.ClientCalls.futureUnaryCall;
-import static io.grpc.stub.ServerCalls.asyncBidiStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncClientStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncServerStreamingCall;
 import static io.grpc.stub.ServerCalls.asyncUnaryCall;
-import static io.grpc.stub.ServerCalls.asyncUnimplementedStreamingCall;
 import static io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall;
 
 /**
@@ -27,29 +20,29 @@ public final class INameNodeGrpc {
   public static final String SERVICE_NAME = "hdfs.INameNode";
 
   // Static method descriptors that strictly reflect the proto.
-  private static volatile io.grpc.MethodDescriptor<ds.hdfs.Operations.OpenCloseRequest,
-      ds.hdfs.Operations.OpenCloseResponse> getOpenFileMethod;
+  private static volatile io.grpc.MethodDescriptor<Operations.OpenCloseRequest,
+      Operations.OpenCloseResponse> getOpenFileMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "openFile",
-      requestType = ds.hdfs.Operations.OpenCloseRequest.class,
-      responseType = ds.hdfs.Operations.OpenCloseResponse.class,
+      requestType = Operations.OpenCloseRequest.class,
+      responseType = Operations.OpenCloseResponse.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<ds.hdfs.Operations.OpenCloseRequest,
-      ds.hdfs.Operations.OpenCloseResponse> getOpenFileMethod() {
-    io.grpc.MethodDescriptor<ds.hdfs.Operations.OpenCloseRequest, ds.hdfs.Operations.OpenCloseResponse> getOpenFileMethod;
+  public static io.grpc.MethodDescriptor<Operations.OpenCloseRequest,
+      Operations.OpenCloseResponse> getOpenFileMethod() {
+    io.grpc.MethodDescriptor<Operations.OpenCloseRequest, Operations.OpenCloseResponse> getOpenFileMethod;
     if ((getOpenFileMethod = INameNodeGrpc.getOpenFileMethod) == null) {
       synchronized (INameNodeGrpc.class) {
         if ((getOpenFileMethod = INameNodeGrpc.getOpenFileMethod) == null) {
           INameNodeGrpc.getOpenFileMethod = getOpenFileMethod =
-              io.grpc.MethodDescriptor.<ds.hdfs.Operations.OpenCloseRequest, ds.hdfs.Operations.OpenCloseResponse>newBuilder()
+              io.grpc.MethodDescriptor.<Operations.OpenCloseRequest, Operations.OpenCloseResponse>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "openFile"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  ds.hdfs.Operations.OpenCloseRequest.getDefaultInstance()))
+                  Operations.OpenCloseRequest.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  ds.hdfs.Operations.OpenCloseResponse.getDefaultInstance()))
+                  Operations.OpenCloseResponse.getDefaultInstance()))
               .setSchemaDescriptor(new INameNodeMethodDescriptorSupplier("openFile"))
               .build();
         }
@@ -58,29 +51,29 @@ public final class INameNodeGrpc {
     return getOpenFileMethod;
   }
 
-  private static volatile io.grpc.MethodDescriptor<ds.hdfs.Operations.OpenCloseRequest,
-      ds.hdfs.Operations.OpenCloseResponse> getCloseFileMethod;
+  private static volatile io.grpc.MethodDescriptor<Operations.OpenCloseRequest,
+      Operations.OpenCloseResponse> getCloseFileMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "closeFile",
-      requestType = ds.hdfs.Operations.OpenCloseRequest.class,
-      responseType = ds.hdfs.Operations.OpenCloseResponse.class,
+      requestType = Operations.OpenCloseRequest.class,
+      responseType = Operations.OpenCloseResponse.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<ds.hdfs.Operations.OpenCloseRequest,
-      ds.hdfs.Operations.OpenCloseResponse> getCloseFileMethod() {
-    io.grpc.MethodDescriptor<ds.hdfs.Operations.OpenCloseRequest, ds.hdfs.Operations.OpenCloseResponse> getCloseFileMethod;
+  public static io.grpc.MethodDescriptor<Operations.OpenCloseRequest,
+      Operations.OpenCloseResponse> getCloseFileMethod() {
+    io.grpc.MethodDescriptor<Operations.OpenCloseRequest, Operations.OpenCloseResponse> getCloseFileMethod;
     if ((getCloseFileMethod = INameNodeGrpc.getCloseFileMethod) == null) {
       synchronized (INameNodeGrpc.class) {
         if ((getCloseFileMethod = INameNodeGrpc.getCloseFileMethod) == null) {
           INameNodeGrpc.getCloseFileMethod = getCloseFileMethod =
-              io.grpc.MethodDescriptor.<ds.hdfs.Operations.OpenCloseRequest, ds.hdfs.Operations.OpenCloseResponse>newBuilder()
+              io.grpc.MethodDescriptor.<Operations.OpenCloseRequest, Operations.OpenCloseResponse>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "closeFile"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  ds.hdfs.Operations.OpenCloseRequest.getDefaultInstance()))
+                  Operations.OpenCloseRequest.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  ds.hdfs.Operations.OpenCloseResponse.getDefaultInstance()))
+                  Operations.OpenCloseResponse.getDefaultInstance()))
               .setSchemaDescriptor(new INameNodeMethodDescriptorSupplier("closeFile"))
               .build();
         }
@@ -89,29 +82,29 @@ public final class INameNodeGrpc {
     return getCloseFileMethod;
   }
 
-  private static volatile io.grpc.MethodDescriptor<ds.hdfs.Operations.GetBlockLocationsRequest,
-      ds.hdfs.Operations.GetBlockLocationsResponse> getGetBlockLocationsMethod;
+  private static volatile io.grpc.MethodDescriptor<Operations.GetBlockLocationsRequest,
+      Operations.GetBlockLocationsResponse> getGetBlockLocationsMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "getBlockLocations",
-      requestType = ds.hdfs.Operations.GetBlockLocationsRequest.class,
-      responseType = ds.hdfs.Operations.GetBlockLocationsResponse.class,
+      requestType = Operations.GetBlockLocationsRequest.class,
+      responseType = Operations.GetBlockLocationsResponse.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<ds.hdfs.Operations.GetBlockLocationsRequest,
-      ds.hdfs.Operations.GetBlockLocationsResponse> getGetBlockLocationsMethod() {
-    io.grpc.MethodDescriptor<ds.hdfs.Operations.GetBlockLocationsRequest, ds.hdfs.Operations.GetBlockLocationsResponse> getGetBlockLocationsMethod;
+  public static io.grpc.MethodDescriptor<Operations.GetBlockLocationsRequest,
+      Operations.GetBlockLocationsResponse> getGetBlockLocationsMethod() {
+    io.grpc.MethodDescriptor<Operations.GetBlockLocationsRequest, Operations.GetBlockLocationsResponse> getGetBlockLocationsMethod;
     if ((getGetBlockLocationsMethod = INameNodeGrpc.getGetBlockLocationsMethod) == null) {
       synchronized (INameNodeGrpc.class) {
         if ((getGetBlockLocationsMethod = INameNodeGrpc.getGetBlockLocationsMethod) == null) {
           INameNodeGrpc.getGetBlockLocationsMethod = getGetBlockLocationsMethod =
-              io.grpc.MethodDescriptor.<ds.hdfs.Operations.GetBlockLocationsRequest, ds.hdfs.Operations.GetBlockLocationsResponse>newBuilder()
+              io.grpc.MethodDescriptor.<Operations.GetBlockLocationsRequest, Operations.GetBlockLocationsResponse>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "getBlockLocations"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  ds.hdfs.Operations.GetBlockLocationsRequest.getDefaultInstance()))
+                  Operations.GetBlockLocationsRequest.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  ds.hdfs.Operations.GetBlockLocationsResponse.getDefaultInstance()))
+                  Operations.GetBlockLocationsResponse.getDefaultInstance()))
               .setSchemaDescriptor(new INameNodeMethodDescriptorSupplier("getBlockLocations"))
               .build();
         }
@@ -120,29 +113,29 @@ public final class INameNodeGrpc {
     return getGetBlockLocationsMethod;
   }
 
-  private static volatile io.grpc.MethodDescriptor<ds.hdfs.Operations.AssignBlockRequest,
-      ds.hdfs.Operations.AssignBlockResponse> getAssignBlockMethod;
+  private static volatile io.grpc.MethodDescriptor<Operations.AssignBlockRequest,
+      Operations.AssignBlockResponse> getAssignBlockMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "assignBlock",
-      requestType = ds.hdfs.Operations.AssignBlockRequest.class,
-      responseType = ds.hdfs.Operations.AssignBlockResponse.class,
+      requestType = Operations.AssignBlockRequest.class,
+      responseType = Operations.AssignBlockResponse.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<ds.hdfs.Operations.AssignBlockRequest,
-      ds.hdfs.Operations.AssignBlockResponse> getAssignBlockMethod() {
-    io.grpc.MethodDescriptor<ds.hdfs.Operations.AssignBlockRequest, ds.hdfs.Operations.AssignBlockResponse> getAssignBlockMethod;
+  public static io.grpc.MethodDescriptor<Operations.AssignBlockRequest,
+      Operations.AssignBlockResponse> getAssignBlockMethod() {
+    io.grpc.MethodDescriptor<Operations.AssignBlockRequest, Operations.AssignBlockResponse> getAssignBlockMethod;
     if ((getAssignBlockMethod = INameNodeGrpc.getAssignBlockMethod) == null) {
       synchronized (INameNodeGrpc.class) {
         if ((getAssignBlockMethod = INameNodeGrpc.getAssignBlockMethod) == null) {
           INameNodeGrpc.getAssignBlockMethod = getAssignBlockMethod =
-              io.grpc.MethodDescriptor.<ds.hdfs.Operations.AssignBlockRequest, ds.hdfs.Operations.AssignBlockResponse>newBuilder()
+              io.grpc.MethodDescriptor.<Operations.AssignBlockRequest, Operations.AssignBlockResponse>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "assignBlock"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  ds.hdfs.Operations.AssignBlockRequest.getDefaultInstance()))
+                  Operations.AssignBlockRequest.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  ds.hdfs.Operations.AssignBlockResponse.getDefaultInstance()))
+                  Operations.AssignBlockResponse.getDefaultInstance()))
               .setSchemaDescriptor(new INameNodeMethodDescriptorSupplier("assignBlock"))
               .build();
         }
@@ -152,28 +145,28 @@ public final class INameNodeGrpc {
   }
 
   private static volatile io.grpc.MethodDescriptor<com.google.protobuf.Empty,
-      ds.hdfs.Operations.ListResponse> getListMethod;
+      Operations.ListResponse> getListMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "list",
       requestType = com.google.protobuf.Empty.class,
-      responseType = ds.hdfs.Operations.ListResponse.class,
+      responseType = Operations.ListResponse.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
   public static io.grpc.MethodDescriptor<com.google.protobuf.Empty,
-      ds.hdfs.Operations.ListResponse> getListMethod() {
-    io.grpc.MethodDescriptor<com.google.protobuf.Empty, ds.hdfs.Operations.ListResponse> getListMethod;
+      Operations.ListResponse> getListMethod() {
+    io.grpc.MethodDescriptor<com.google.protobuf.Empty, Operations.ListResponse> getListMethod;
     if ((getListMethod = INameNodeGrpc.getListMethod) == null) {
       synchronized (INameNodeGrpc.class) {
         if ((getListMethod = INameNodeGrpc.getListMethod) == null) {
           INameNodeGrpc.getListMethod = getListMethod =
-              io.grpc.MethodDescriptor.<com.google.protobuf.Empty, ds.hdfs.Operations.ListResponse>newBuilder()
+              io.grpc.MethodDescriptor.<com.google.protobuf.Empty, Operations.ListResponse>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "list"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
                   com.google.protobuf.Empty.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  ds.hdfs.Operations.ListResponse.getDefaultInstance()))
+                  Operations.ListResponse.getDefaultInstance()))
               .setSchemaDescriptor(new INameNodeMethodDescriptorSupplier("list"))
               .build();
         }
@@ -182,27 +175,27 @@ public final class INameNodeGrpc {
     return getListMethod;
   }
 
-  private static volatile io.grpc.MethodDescriptor<ds.hdfs.Operations.Heartbeat,
+  private static volatile io.grpc.MethodDescriptor<Operations.Heartbeat,
       com.google.protobuf.Empty> getHeartbeatMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "heartbeat",
-      requestType = ds.hdfs.Operations.Heartbeat.class,
+      requestType = Operations.Heartbeat.class,
       responseType = com.google.protobuf.Empty.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<ds.hdfs.Operations.Heartbeat,
+  public static io.grpc.MethodDescriptor<Operations.Heartbeat,
       com.google.protobuf.Empty> getHeartbeatMethod() {
-    io.grpc.MethodDescriptor<ds.hdfs.Operations.Heartbeat, com.google.protobuf.Empty> getHeartbeatMethod;
+    io.grpc.MethodDescriptor<Operations.Heartbeat, com.google.protobuf.Empty> getHeartbeatMethod;
     if ((getHeartbeatMethod = INameNodeGrpc.getHeartbeatMethod) == null) {
       synchronized (INameNodeGrpc.class) {
         if ((getHeartbeatMethod = INameNodeGrpc.getHeartbeatMethod) == null) {
           INameNodeGrpc.getHeartbeatMethod = getHeartbeatMethod =
-              io.grpc.MethodDescriptor.<ds.hdfs.Operations.Heartbeat, com.google.protobuf.Empty>newBuilder()
+              io.grpc.MethodDescriptor.<Operations.Heartbeat, com.google.protobuf.Empty>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "heartbeat"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  ds.hdfs.Operations.Heartbeat.getDefaultInstance()))
+                  Operations.Heartbeat.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
                   com.google.protobuf.Empty.getDefaultInstance()))
               .setSchemaDescriptor(new INameNodeMethodDescriptorSupplier("heartbeat"))
@@ -266,8 +259,8 @@ public final class INameNodeGrpc {
      * Allows a client to open a file for reading or writing
      * </pre>
      */
-    public void openFile(ds.hdfs.Operations.OpenCloseRequest request,
-        io.grpc.stub.StreamObserver<ds.hdfs.Operations.OpenCloseResponse> responseObserver) {
+    public void openFile(Operations.OpenCloseRequest request,
+                         io.grpc.stub.StreamObserver<Operations.OpenCloseResponse> responseObserver) {
       asyncUnimplementedUnaryCall(getOpenFileMethod(), responseObserver);
     }
 
@@ -277,8 +270,8 @@ public final class INameNodeGrpc {
      * reading or writing
      * </pre>
      */
-    public void closeFile(ds.hdfs.Operations.OpenCloseRequest request,
-        io.grpc.stub.StreamObserver<ds.hdfs.Operations.OpenCloseResponse> responseObserver) {
+    public void closeFile(Operations.OpenCloseRequest request,
+                          io.grpc.stub.StreamObserver<Operations.OpenCloseResponse> responseObserver) {
       asyncUnimplementedUnaryCall(getCloseFileMethod(), responseObserver);
     }
 
@@ -288,8 +281,8 @@ public final class INameNodeGrpc {
      * given file block
      * </pre>
      */
-    public void getBlockLocations(ds.hdfs.Operations.GetBlockLocationsRequest request,
-        io.grpc.stub.StreamObserver<ds.hdfs.Operations.GetBlockLocationsResponse> responseObserver) {
+    public void getBlockLocations(Operations.GetBlockLocationsRequest request,
+                                  io.grpc.stub.StreamObserver<Operations.GetBlockLocationsResponse> responseObserver) {
       asyncUnimplementedUnaryCall(getGetBlockLocationsMethod(), responseObserver);
     }
 
@@ -299,8 +292,8 @@ public final class INameNodeGrpc {
      * a particular file block
      * </pre>
      */
-    public void assignBlock(ds.hdfs.Operations.AssignBlockRequest request,
-        io.grpc.stub.StreamObserver<ds.hdfs.Operations.AssignBlockResponse> responseObserver) {
+    public void assignBlock(Operations.AssignBlockRequest request,
+                            io.grpc.stub.StreamObserver<Operations.AssignBlockResponse> responseObserver) {
       asyncUnimplementedUnaryCall(getAssignBlockMethod(), responseObserver);
     }
 
@@ -310,7 +303,7 @@ public final class INameNodeGrpc {
      * </pre>
      */
     public void list(com.google.protobuf.Empty request,
-        io.grpc.stub.StreamObserver<ds.hdfs.Operations.ListResponse> responseObserver) {
+        io.grpc.stub.StreamObserver<Operations.ListResponse> responseObserver) {
       asyncUnimplementedUnaryCall(getListMethod(), responseObserver);
     }
 
@@ -319,8 +312,8 @@ public final class INameNodeGrpc {
      * For DataNode to send NameNode heartbeats
      * </pre>
      */
-    public void heartbeat(ds.hdfs.Operations.Heartbeat request,
-        io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
+    public void heartbeat(Operations.Heartbeat request,
+                          io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
       asyncUnimplementedUnaryCall(getHeartbeatMethod(), responseObserver);
     }
 
@@ -330,42 +323,42 @@ public final class INameNodeGrpc {
             getOpenFileMethod(),
             asyncUnaryCall(
               new MethodHandlers<
-                ds.hdfs.Operations.OpenCloseRequest,
-                ds.hdfs.Operations.OpenCloseResponse>(
+                Operations.OpenCloseRequest,
+                Operations.OpenCloseResponse>(
                   this, METHODID_OPEN_FILE)))
           .addMethod(
             getCloseFileMethod(),
             asyncUnaryCall(
               new MethodHandlers<
-                ds.hdfs.Operations.OpenCloseRequest,
-                ds.hdfs.Operations.OpenCloseResponse>(
+                Operations.OpenCloseRequest,
+                Operations.OpenCloseResponse>(
                   this, METHODID_CLOSE_FILE)))
           .addMethod(
             getGetBlockLocationsMethod(),
             asyncUnaryCall(
               new MethodHandlers<
-                ds.hdfs.Operations.GetBlockLocationsRequest,
-                ds.hdfs.Operations.GetBlockLocationsResponse>(
+                Operations.GetBlockLocationsRequest,
+                Operations.GetBlockLocationsResponse>(
                   this, METHODID_GET_BLOCK_LOCATIONS)))
           .addMethod(
             getAssignBlockMethod(),
             asyncUnaryCall(
               new MethodHandlers<
-                ds.hdfs.Operations.AssignBlockRequest,
-                ds.hdfs.Operations.AssignBlockResponse>(
+                Operations.AssignBlockRequest,
+                Operations.AssignBlockResponse>(
                   this, METHODID_ASSIGN_BLOCK)))
           .addMethod(
             getListMethod(),
             asyncUnaryCall(
               new MethodHandlers<
                 com.google.protobuf.Empty,
-                ds.hdfs.Operations.ListResponse>(
+                Operations.ListResponse>(
                   this, METHODID_LIST)))
           .addMethod(
             getHeartbeatMethod(),
             asyncUnaryCall(
               new MethodHandlers<
-                ds.hdfs.Operations.Heartbeat,
+                Operations.Heartbeat,
                 com.google.protobuf.Empty>(
                   this, METHODID_HEARTBEAT)))
           .build();
@@ -391,8 +384,8 @@ public final class INameNodeGrpc {
      * Allows a client to open a file for reading or writing
      * </pre>
      */
-    public void openFile(ds.hdfs.Operations.OpenCloseRequest request,
-        io.grpc.stub.StreamObserver<ds.hdfs.Operations.OpenCloseResponse> responseObserver) {
+    public void openFile(Operations.OpenCloseRequest request,
+                         io.grpc.stub.StreamObserver<Operations.OpenCloseResponse> responseObserver) {
       asyncUnaryCall(
           getChannel().newCall(getOpenFileMethod(), getCallOptions()), request, responseObserver);
     }
@@ -403,8 +396,8 @@ public final class INameNodeGrpc {
      * reading or writing
      * </pre>
      */
-    public void closeFile(ds.hdfs.Operations.OpenCloseRequest request,
-        io.grpc.stub.StreamObserver<ds.hdfs.Operations.OpenCloseResponse> responseObserver) {
+    public void closeFile(Operations.OpenCloseRequest request,
+                          io.grpc.stub.StreamObserver<Operations.OpenCloseResponse> responseObserver) {
       asyncUnaryCall(
           getChannel().newCall(getCloseFileMethod(), getCallOptions()), request, responseObserver);
     }
@@ -415,8 +408,8 @@ public final class INameNodeGrpc {
      * given file block
      * </pre>
      */
-    public void getBlockLocations(ds.hdfs.Operations.GetBlockLocationsRequest request,
-        io.grpc.stub.StreamObserver<ds.hdfs.Operations.GetBlockLocationsResponse> responseObserver) {
+    public void getBlockLocations(Operations.GetBlockLocationsRequest request,
+                                  io.grpc.stub.StreamObserver<Operations.GetBlockLocationsResponse> responseObserver) {
       asyncUnaryCall(
           getChannel().newCall(getGetBlockLocationsMethod(), getCallOptions()), request, responseObserver);
     }
@@ -427,8 +420,8 @@ public final class INameNodeGrpc {
      * a particular file block
      * </pre>
      */
-    public void assignBlock(ds.hdfs.Operations.AssignBlockRequest request,
-        io.grpc.stub.StreamObserver<ds.hdfs.Operations.AssignBlockResponse> responseObserver) {
+    public void assignBlock(Operations.AssignBlockRequest request,
+                            io.grpc.stub.StreamObserver<Operations.AssignBlockResponse> responseObserver) {
       asyncUnaryCall(
           getChannel().newCall(getAssignBlockMethod(), getCallOptions()), request, responseObserver);
     }
@@ -439,7 +432,7 @@ public final class INameNodeGrpc {
      * </pre>
      */
     public void list(com.google.protobuf.Empty request,
-        io.grpc.stub.StreamObserver<ds.hdfs.Operations.ListResponse> responseObserver) {
+        io.grpc.stub.StreamObserver<Operations.ListResponse> responseObserver) {
       asyncUnaryCall(
           getChannel().newCall(getListMethod(), getCallOptions()), request, responseObserver);
     }
@@ -449,8 +442,8 @@ public final class INameNodeGrpc {
      * For DataNode to send NameNode heartbeats
      * </pre>
      */
-    public void heartbeat(ds.hdfs.Operations.Heartbeat request,
-        io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
+    public void heartbeat(Operations.Heartbeat request,
+                          io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
       asyncUnaryCall(
           getChannel().newCall(getHeartbeatMethod(), getCallOptions()), request, responseObserver);
     }
@@ -475,7 +468,7 @@ public final class INameNodeGrpc {
      * Allows a client to open a file for reading or writing
      * </pre>
      */
-    public ds.hdfs.Operations.OpenCloseResponse openFile(ds.hdfs.Operations.OpenCloseRequest request) {
+    public Operations.OpenCloseResponse openFile(Operations.OpenCloseRequest request) {
       return blockingUnaryCall(
           getChannel(), getOpenFileMethod(), getCallOptions(), request);
     }
@@ -486,7 +479,7 @@ public final class INameNodeGrpc {
      * reading or writing
      * </pre>
      */
-    public ds.hdfs.Operations.OpenCloseResponse closeFile(ds.hdfs.Operations.OpenCloseRequest request) {
+    public Operations.OpenCloseResponse closeFile(Operations.OpenCloseRequest request) {
       return blockingUnaryCall(
           getChannel(), getCloseFileMethod(), getCallOptions(), request);
     }
@@ -497,7 +490,7 @@ public final class INameNodeGrpc {
      * given file block
      * </pre>
      */
-    public ds.hdfs.Operations.GetBlockLocationsResponse getBlockLocations(ds.hdfs.Operations.GetBlockLocationsRequest request) {
+    public Operations.GetBlockLocationsResponse getBlockLocations(Operations.GetBlockLocationsRequest request) {
       return blockingUnaryCall(
           getChannel(), getGetBlockLocationsMethod(), getCallOptions(), request);
     }
@@ -508,7 +501,7 @@ public final class INameNodeGrpc {
      * a particular file block
      * </pre>
      */
-    public ds.hdfs.Operations.AssignBlockResponse assignBlock(ds.hdfs.Operations.AssignBlockRequest request) {
+    public Operations.AssignBlockResponse assignBlock(Operations.AssignBlockRequest request) {
       return blockingUnaryCall(
           getChannel(), getAssignBlockMethod(), getCallOptions(), request);
     }
@@ -518,7 +511,7 @@ public final class INameNodeGrpc {
      * Lists the files stored in HDFS (regardless of availability)
      * </pre>
      */
-    public ds.hdfs.Operations.ListResponse list(com.google.protobuf.Empty request) {
+    public Operations.ListResponse list(com.google.protobuf.Empty request) {
       return blockingUnaryCall(
           getChannel(), getListMethod(), getCallOptions(), request);
     }
@@ -528,7 +521,7 @@ public final class INameNodeGrpc {
      * For DataNode to send NameNode heartbeats
      * </pre>
      */
-    public com.google.protobuf.Empty heartbeat(ds.hdfs.Operations.Heartbeat request) {
+    public com.google.protobuf.Empty heartbeat(Operations.Heartbeat request) {
       return blockingUnaryCall(
           getChannel(), getHeartbeatMethod(), getCallOptions(), request);
     }
@@ -553,8 +546,8 @@ public final class INameNodeGrpc {
      * Allows a client to open a file for reading or writing
      * </pre>
      */
-    public com.google.common.util.concurrent.ListenableFuture<ds.hdfs.Operations.OpenCloseResponse> openFile(
-        ds.hdfs.Operations.OpenCloseRequest request) {
+    public com.google.common.util.concurrent.ListenableFuture<Operations.OpenCloseResponse> openFile(
+        Operations.OpenCloseRequest request) {
       return futureUnaryCall(
           getChannel().newCall(getOpenFileMethod(), getCallOptions()), request);
     }
@@ -565,8 +558,8 @@ public final class INameNodeGrpc {
      * reading or writing
      * </pre>
      */
-    public com.google.common.util.concurrent.ListenableFuture<ds.hdfs.Operations.OpenCloseResponse> closeFile(
-        ds.hdfs.Operations.OpenCloseRequest request) {
+    public com.google.common.util.concurrent.ListenableFuture<Operations.OpenCloseResponse> closeFile(
+        Operations.OpenCloseRequest request) {
       return futureUnaryCall(
           getChannel().newCall(getCloseFileMethod(), getCallOptions()), request);
     }
@@ -577,8 +570,8 @@ public final class INameNodeGrpc {
      * given file block
      * </pre>
      */
-    public com.google.common.util.concurrent.ListenableFuture<ds.hdfs.Operations.GetBlockLocationsResponse> getBlockLocations(
-        ds.hdfs.Operations.GetBlockLocationsRequest request) {
+    public com.google.common.util.concurrent.ListenableFuture<Operations.GetBlockLocationsResponse> getBlockLocations(
+        Operations.GetBlockLocationsRequest request) {
       return futureUnaryCall(
           getChannel().newCall(getGetBlockLocationsMethod(), getCallOptions()), request);
     }
@@ -589,8 +582,8 @@ public final class INameNodeGrpc {
      * a particular file block
      * </pre>
      */
-    public com.google.common.util.concurrent.ListenableFuture<ds.hdfs.Operations.AssignBlockResponse> assignBlock(
-        ds.hdfs.Operations.AssignBlockRequest request) {
+    public com.google.common.util.concurrent.ListenableFuture<Operations.AssignBlockResponse> assignBlock(
+        Operations.AssignBlockRequest request) {
       return futureUnaryCall(
           getChannel().newCall(getAssignBlockMethod(), getCallOptions()), request);
     }
@@ -600,7 +593,7 @@ public final class INameNodeGrpc {
      * Lists the files stored in HDFS (regardless of availability)
      * </pre>
      */
-    public com.google.common.util.concurrent.ListenableFuture<ds.hdfs.Operations.ListResponse> list(
+    public com.google.common.util.concurrent.ListenableFuture<Operations.ListResponse> list(
         com.google.protobuf.Empty request) {
       return futureUnaryCall(
           getChannel().newCall(getListMethod(), getCallOptions()), request);
@@ -612,7 +605,7 @@ public final class INameNodeGrpc {
      * </pre>
      */
     public com.google.common.util.concurrent.ListenableFuture<com.google.protobuf.Empty> heartbeat(
-        ds.hdfs.Operations.Heartbeat request) {
+        Operations.Heartbeat request) {
       return futureUnaryCall(
           getChannel().newCall(getHeartbeatMethod(), getCallOptions()), request);
     }
@@ -643,27 +636,27 @@ public final class INameNodeGrpc {
     public void invoke(Req request, io.grpc.stub.StreamObserver<Resp> responseObserver) {
       switch (methodId) {
         case METHODID_OPEN_FILE:
-          serviceImpl.openFile((ds.hdfs.Operations.OpenCloseRequest) request,
-              (io.grpc.stub.StreamObserver<ds.hdfs.Operations.OpenCloseResponse>) responseObserver);
+          serviceImpl.openFile((Operations.OpenCloseRequest) request,
+              (io.grpc.stub.StreamObserver<Operations.OpenCloseResponse>) responseObserver);
           break;
         case METHODID_CLOSE_FILE:
-          serviceImpl.closeFile((ds.hdfs.Operations.OpenCloseRequest) request,
-              (io.grpc.stub.StreamObserver<ds.hdfs.Operations.OpenCloseResponse>) responseObserver);
+          serviceImpl.closeFile((Operations.OpenCloseRequest) request,
+              (io.grpc.stub.StreamObserver<Operations.OpenCloseResponse>) responseObserver);
           break;
         case METHODID_GET_BLOCK_LOCATIONS:
-          serviceImpl.getBlockLocations((ds.hdfs.Operations.GetBlockLocationsRequest) request,
-              (io.grpc.stub.StreamObserver<ds.hdfs.Operations.GetBlockLocationsResponse>) responseObserver);
+          serviceImpl.getBlockLocations((Operations.GetBlockLocationsRequest) request,
+              (io.grpc.stub.StreamObserver<Operations.GetBlockLocationsResponse>) responseObserver);
           break;
         case METHODID_ASSIGN_BLOCK:
-          serviceImpl.assignBlock((ds.hdfs.Operations.AssignBlockRequest) request,
-              (io.grpc.stub.StreamObserver<ds.hdfs.Operations.AssignBlockResponse>) responseObserver);
+          serviceImpl.assignBlock((Operations.AssignBlockRequest) request,
+              (io.grpc.stub.StreamObserver<Operations.AssignBlockResponse>) responseObserver);
           break;
         case METHODID_LIST:
           serviceImpl.list((com.google.protobuf.Empty) request,
-              (io.grpc.stub.StreamObserver<ds.hdfs.Operations.ListResponse>) responseObserver);
+              (io.grpc.stub.StreamObserver<Operations.ListResponse>) responseObserver);
           break;
         case METHODID_HEARTBEAT:
-          serviceImpl.heartbeat((ds.hdfs.Operations.Heartbeat) request,
+          serviceImpl.heartbeat((Operations.Heartbeat) request,
               (io.grpc.stub.StreamObserver<com.google.protobuf.Empty>) responseObserver);
           break;
         default:

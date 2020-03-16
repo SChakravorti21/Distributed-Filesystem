@@ -1,6 +1,5 @@
-package ds.hdfs.proto;
+package ds.hdfs;
 
-import ds.hdfs.Utils;
 import java.util.Map;
 
 public class NameNodeServer extends AbstractNodeServer{
