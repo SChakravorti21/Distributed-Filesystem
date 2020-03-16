@@ -1,4 +1,4 @@
 DESCRIPTION=NN
-IP=kill.cs.rutgers.edu
+IP=localhost
 PORT=2004
 REPLICATION_FACTOR=2

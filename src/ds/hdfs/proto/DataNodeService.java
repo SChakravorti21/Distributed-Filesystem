@@ -4,6 +4,7 @@ import com.google.protobuf.ByteString;
 import ds.hdfs.INameNode;
 import ds.hdfs.Operations;
 import ds.hdfs.Utils;
+import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 
 import java.io.File;
@@ -13,7 +14,6 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.rmi.RemoteException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Timer;
@@ -27,10 +27,10 @@ public class DataNodeService extends IDataNodeGrpc.IDataNodeImplBase {
     private String ip;
     private int id;
     private int port;
-    private INameNode nameNode;
+    private INameNodeGrpc.INameNodeBlockingStub nameNode;
     private long failedHeartbeats = 0;
 
-    public DataNodeService(int id, String ip, int port) {
+    DataNodeService(int id, String ip, int port) {
         this.id = id;
         this.ip = ip;
         this.port = port;
@@ -40,19 +40,10 @@ public class DataNodeService extends IDataNodeGrpc.IDataNodeImplBase {
             public void run() {
                 try {
                     sendHeartbeat();
-                } catch (RemoteException re) {
+                    failedHeartbeats = 0;
+                } catch (IOException | StatusRuntimeException e) {
                     failedHeartbeats++;
-                    System.err.println("Failed to send heartbeat");
-
-                    // If we fail to send heartbeats multiple times
-                    // in a row, try to reconnect to NameNode
-                    if(failedHeartbeats % 10 == 0) {
-                        try {
-                            nameNode = Utils.connectNameNode();
-                        } catch (Exception e) {
-                            System.err.println("Failed to connect to NameNode");
-                        }
-                    }
+                    System.err.printf("Failed to send heartbeat (attempt #%d)\n", failedHeartbeats);
                 }
             }
         }, 0, HEARTBEAT_INTERVAL);
@@ -122,7 +113,10 @@ public class DataNodeService extends IDataNodeGrpc.IDataNodeImplBase {
         responseObserver.onCompleted();
     }
 
-    private void sendHeartbeat() throws RemoteException {
+    private void sendHeartbeat() throws IOException, StatusRuntimeException {
+        if(nameNode == null)
+            nameNode = Utils.getNameNodeStub();
+
         File folder = new File(String.format("data/node-%d/", id));
         File[] files = folder.listFiles();
 
@@ -142,7 +136,7 @@ public class DataNodeService extends IDataNodeGrpc.IDataNodeImplBase {
                             .build();
                 }).collect(Collectors.toList());
 
-        byte[] heartbeat = Operations.Heartbeat
+        Operations.Heartbeat heartbeat = Operations.Heartbeat
                 .newBuilder()
                 .setNode(Operations.DataNode
                         .newBuilder()
@@ -151,10 +145,9 @@ public class DataNodeService extends IDataNodeGrpc.IDataNodeImplBase {
                         .setPort(port)
                         .build())
                 .addAllAvailableFileBlocks(blocks)
-                .build()
-                .toByteArray();
+                .build();
 
-        nameNode.heartBeat(heartbeat);
+        nameNode.heartbeat(heartbeat);
     }
 
     private static Operations.ReadWriteResponse createReadWriteResponse(

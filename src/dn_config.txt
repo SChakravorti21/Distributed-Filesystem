@@ -1,4 +1,3 @@
 ID=1
-IP=ls.cs.rutgers.edu
-REGISTRY-PORT=2005
-STUB-PORT=2006
+IP=localhost
+PORT=2006

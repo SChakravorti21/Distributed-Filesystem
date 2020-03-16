@@ -38,7 +38,6 @@ public class NameNodeService extends INameNodeGrpc.INameNodeImplBase {
     private static final Object fileLock = new Object();
 
     // Tracking active DataNodes and their properties
-    private Timer timer = new Timer();
     private Map<Integer, DataNode> activeNodes = new HashMap<>();
 
     // Tracking file information, such what files are available,
@@ -53,13 +52,13 @@ public class NameNodeService extends INameNodeGrpc.INameNodeImplBase {
         this.replicationFactor = replicationFactor;
         this.fileStatuses = loadState(STATE_CACHE_FILE);
 
-//        timer.scheduleAtFixedRate(new TimerTask() {
-//            @Override
-//            public void run() {
-//                removeDeadNodes();
-//                persistState(STATE_CACHE_FILE);
-//            }
-//        }, SCAN_INTERVAL, SCAN_INTERVAL);
+        new Timer().scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                removeDeadNodes();
+                persistState(STATE_CACHE_FILE);
+            }
+        }, SCAN_INTERVAL, SCAN_INTERVAL);
     }
 
     @Override
@@ -246,6 +245,7 @@ public class NameNodeService extends INameNodeGrpc.INameNodeImplBase {
             }
         }
 
+        responseObserver.onNext(Empty.getDefaultInstance());
         responseObserver.onCompleted();
     }
 
