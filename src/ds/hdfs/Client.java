@@ -8,6 +8,7 @@ import ds.hdfs.proto.Operations;
 import io.grpc.StatusRuntimeException;
 
 import java.io.*;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -166,6 +167,7 @@ public class Client {
         }
 
         int blockNumber = 0;
+        Map<Integer, IDataNodeGrpc.IDataNodeBlockingStub> stubs = new HashMap<>();
 
         while(true) {
             byte[] contents = null;
@@ -191,13 +193,17 @@ public class Client {
             // Try to read the block from any of the listed nodes
             // (only one read needs to be successful as all nodes simply store replicas)
             for(Operations.DataNode node : locationsResponse.getNodesList()) {
+                if(!stubs.containsKey(node.getId())) {
+                    stubs.put(node.getId(), Utils.getDataNodeStub(node.getIp(), node.getPort()));
+                }
+                
                 try {
                     Operations.ReadWriteResponse readResponse = doReadWrite(
                             remoteFilename,
                             blockNumber,
                             null,
                             Operations.FileMode.READ,
-                            Utils.getDataNodeStub(node.getIp(), node.getPort())
+                            stubs.get(node.getId())
                     );
 
                     if(readResponse.getStatus() == Operations.StatusCode.OK) {
@@ -318,7 +324,8 @@ public class Client {
                 System.out.println("The following are the supported commands (optional arguments in <>)");
                 System.out.println("1. put local_filename <hdfs_filename>  # To put a file in HDFS");
                 System.out.println("2. get hdfs_filename  <local_filename> # To get a file from HDFS");
-                System.out.println("2. list                                # To get the list of files in HDFS");
+                System.out.println("3. list                                # To get the list of files in HDFS");
+                System.out.println("4. quit                                # To exit the client shell");
             } else if (splitCommands[0].equals("put")) {
                 try {
                     String localFilename = splitCommands[1];

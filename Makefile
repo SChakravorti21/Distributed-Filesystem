@@ -5,7 +5,7 @@ clean:
 
 build: clean
 	javac -d build -g -sourcepath src -cp $(CLASSPATH) \
-	    --add-modules=java.xml.ws.annotation \
+	    --release=10 --add-modules=java.xml.ws.annotation \
 	    src/ds/hdfs/NameNodeServer.java \
 	    src/ds/hdfs/DataNodeServer.java \
 	    src/ds/hdfs/Client.java
