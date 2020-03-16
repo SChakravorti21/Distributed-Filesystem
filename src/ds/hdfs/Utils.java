@@ -1,5 +1,6 @@
 package ds.hdfs;
 
+import ds.hdfs.proto.IDataNodeGrpc;
 import ds.hdfs.proto.INameNodeGrpc;
 import ds.hdfs.proto.NameNodeService;
 import io.grpc.Channel;
@@ -40,4 +41,12 @@ public class Utils {
                 .usePlaintext()
                 .build());
     }
+
+    public static IDataNodeGrpc.IDataNodeBlockingStub getDataNodeStub(String ip, int port) {
+        return IDataNodeGrpc.newBlockingStub(ManagedChannelBuilder
+            .forAddress(ip, port)
+            .usePlaintext()
+            .build());
+    }
+
 }
