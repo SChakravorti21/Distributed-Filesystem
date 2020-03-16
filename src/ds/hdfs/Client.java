@@ -11,6 +11,7 @@ import java.io.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 public class Client {
 
@@ -23,10 +24,17 @@ public class Client {
         nameNode = Utils.getNameNodeStub();
     }
 
+    /**
+     * @param localFilename the file on client's filesystem to upload to HDFS
+     * @param remoteFilename the name with which the uploaded file should be saved
+     * @throws StatusRuntimeException if contacting the NameNode fails
+     * @throws IOException if performing I/O on {@param localFilename} fails
+     */
     private void putFile(String localFilename, String remoteFilename) throws StatusRuntimeException, IOException {
         System.out.printf("Going to write local file (%s) to remote file (%s)\n",
                 localFilename, remoteFilename);
 
+        // Open the local file that needs to be read
         InputStream input;
         DataInputStream dataInputStream;
 
@@ -38,7 +46,7 @@ public class Client {
             return;
         }
 
-        // Call NameNode for Open File Request
+        // Ask permission to open the remote file for writing
         Operations.OpenCloseResponse openResponse = doOpenClose(remoteFilename, Operations.FileMode.WRITE, true);
 
         if(openResponse.getStatus() != Operations.StatusCode.OK) {
@@ -47,7 +55,8 @@ public class Client {
             return;
         }
 
-        // Call NameNode for Assign Block Request
+        // Ask the NameNode for available DataNodes we can write blocks to.
+        // NameNode shuffles the list of DataNodes to ensure some degree of load balancing
         Operations.AssignBlockRequest blockRequest = Operations.AssignBlockRequest.getDefaultInstance();
         Operations.AssignBlockResponse blockResponse = nameNode.assignBlock(blockRequest);
 
@@ -58,32 +67,38 @@ public class Client {
         }
 
         int blockIndex = 0; // block number
-        List<Operations.DataNode> nodeList = blockResponse.getNodesList();
         int replicationFactor = blockResponse.getReplicationFactor();
 
+        // We can create stubs for all the DataNodes right away because
+        // gRPC doesn't connect to the service until a procedure call is made
+        List<IDataNodeGrpc.IDataNodeBlockingStub> nodeList = blockResponse.getNodesList()
+                .stream()
+                .map(node -> Utils.getDataNodeStub(node.getIp(), node.getPort()))
+                .collect(Collectors.toList());
+
         // We break out of the loop when we reach the end of the file.
-        // The while condition prevents us from putting the file
-        // if no nodes are active.
         while (true) {
+            // Read the current block from the file
             int replicationCount = 0;
             byte[] curr = new byte[blockSize];
-
             int numRead = dataInputStream.read(curr); // returns bytes read (len)
+
+            // Bytes read is -1 if we reach EOF
             if (numRead <= 0) break;
 
+            // Replicate the block on $replicationFactor nodes, or as many nodes
+            // as possible if replication factor cannot be reached
             for(int nodeIndex = 0;
                 nodeIndex < nodeList.size() && replicationCount < replicationFactor;
                 nodeIndex++
             ) {
-                Operations.DataNode node = nodeList.get(nodeIndex);
-
                 try {
                     Operations.ReadWriteResponse writeResponse = doReadWrite(
                             remoteFilename,
                             blockIndex,
                             ByteString.copyFrom(curr, 0, numRead),
                             Operations.FileMode.WRITE,
-                            Utils.getDataNodeStub(node.getIp(), node.getPort())
+                            nodeList.get(nodeIndex)
                     );
 
                     if(writeResponse.getStatus() != Operations.StatusCode.OK) {
@@ -92,16 +107,23 @@ public class Client {
                         replicationCount++;
                     }
                 } catch (StatusRuntimeException e) {
-                    System.err.printf("Could not connect to DataNode %d, continuing anyways\n", node.getId());
+                    System.err.printf("Could not reach DataNode %d, continuing anyways (error = %s)\n",
+                            blockResponse.getNodesList().get(nodeIndex).getId(),
+                            e.getStatus().getCode());
                 }
             }
 
+            // The project states to assume at least half of all DataNodes will be up
+            // at all times, so we do not handle the case where replicationCount = 0.
             if (replicationCount < replicationFactor)
                 System.err.printf("Failed to reach replication factor for block %d\n", blockIndex);
 
             blockIndex++;
         }
 
+        // Close both the local and remote files
+        // Closing remote file is especially important because writing
+        // acquires an exclusive lock on the file
         dataInputStream.close();
         Operations.OpenCloseResponse closeResponse = doOpenClose(remoteFilename, Operations.FileMode.WRITE, false);
 
@@ -110,10 +132,17 @@ public class Client {
         }
     }
 
+    /**
+     * @param remoteFilename the HDFS file to download
+     * @param localFilename the name with which the downloaded file is stored on local filesystem
+     * @throws StatusRuntimeException if contacting the NameNode fails
+     * @throws IOException if performing I/O on {@param localFilename} fails
+     */
     private void getFile(String remoteFilename, String localFilename) throws StatusRuntimeException, IOException {
         System.out.printf("Going to read remote file (%s) to local file (%s)\n",
                 remoteFilename, localFilename);
 
+        // Open the local file to which we will write the contents of the remote file
         File outputFile;
         FileOutputStream outputStream;
 
@@ -126,6 +155,8 @@ public class Client {
             return;
         }
 
+        // Open remote file for reading; NameNode implementation allows
+        // for multiple concurrent readers (reader-writer mutual exclusion)
         Operations.OpenCloseResponse openResponse = doOpenClose(remoteFilename, Operations.FileMode.READ, true);
 
         if(openResponse.getStatus() != Operations.StatusCode.OK) {
@@ -139,6 +170,7 @@ public class Client {
         while(true) {
             byte[] contents = null;
 
+            // Figure out which DataNodes store the current block
             Operations.GetBlockLocationsRequest locationsRequest = Operations.GetBlockLocationsRequest
                     .newBuilder()
                     .setFilename(remoteFilename)
@@ -147,7 +179,7 @@ public class Client {
 
             Operations.GetBlockLocationsResponse locationsResponse = nameNode.getBlockLocations(locationsRequest);
 
-            // If we reach the end of the file, we get an E_NOBLK error
+            // If we reach the end of the file, we get an E_NOBLK error, can break safely
             if (locationsResponse.getStatus() == Operations.StatusCode.E_NOBLK) {
                 break;
             } else if (locationsResponse.getStatus() != Operations.StatusCode.OK) {
@@ -156,6 +188,8 @@ public class Client {
                 break;
             }
 
+            // Try to read the block from any of the listed nodes
+            // (only one read needs to be successful as all nodes simply store replicas)
             for(Operations.DataNode node : locationsResponse.getNodesList()) {
                 try {
                     Operations.ReadWriteResponse readResponse = doReadWrite(
@@ -185,6 +219,9 @@ public class Client {
             blockNumber++;
         }
 
+        // Close both local and remote files
+        // Closing remote file is especially important because failing to close it might
+        // prevent other clients from being able to write to it (reader-writer locking)
         outputStream.close();
         Operations.OpenCloseResponse closeResponse = doOpenClose(remoteFilename, Operations.FileMode.READ, false);
 
@@ -238,8 +275,7 @@ public class Client {
     }
 
     /**
-     *
-     * E_NOENT = 3;    // File does not exist
+     *     E_NOENT = 3;    // File does not exist
      *     E_NOBLK = 4;    // Block does not exist
      *     E_EXIST = 5;    // File already exists
      *     E_IO    = 6;    // I/O Error
