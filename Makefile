@@ -1,7 +1,11 @@
 CLASSPATH=".:build:libs/*"
+CONFIG="src/dn_config.txt"
 
 clean:
-	rm -rf bin/
+	rm -rf build/
+
+clear_blocks:
+	rm -rf data/node-*
 
 build: clean
 	javac -d build -g -sourcepath src -cp $(CLASSPATH) \
