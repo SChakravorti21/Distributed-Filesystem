@@ -1,14 +1,14 @@
-CLASSPATH=".:build:libs/*"
+CLASSPATH=".:bin:libs/*"
 CONFIG="src/dn_config.txt"
 
 clean:
-	rm -rf build/
+	rm -rf bin/
 
 clear_blocks:
 	rm -rf data/node-*
 
 build: clean
-	javac -d build -g -sourcepath src -cp $(CLASSPATH) \
+	javac -d bin -g -sourcepath src -cp $(CLASSPATH) \
 	    --release=10 --add-modules=java.xml.ws.annotation \
 	    src/ds/hdfs/NameNodeServer.java \
 	    src/ds/hdfs/DataNodeServer.java \
