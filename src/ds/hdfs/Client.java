@@ -304,7 +304,7 @@ public class Client {
             case E_EXIST: return "ERROR: File already exists";
             case E_IO:    return "ERROR: Failed to perform I/O operation on server";
             case E_INVAL: return "ERROR: Invalid request parameters";
-            case E_BUSY:  return "ERROR: File has already been opened by other clients with a different file mode";
+            case E_BUSY:  return "ERROR: File has already been opened by another client for writing";
             default:      return "";
         }
     }
