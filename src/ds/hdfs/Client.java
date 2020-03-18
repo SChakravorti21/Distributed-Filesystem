@@ -5,13 +5,12 @@ import com.google.protobuf.Empty;
 import ds.hdfs.proto.IDataNodeGrpc;
 import ds.hdfs.proto.INameNodeGrpc;
 import ds.hdfs.proto.Operations;
+import io.grpc.ManagedChannel;
 import io.grpc.StatusRuntimeException;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class Client {
@@ -72,7 +71,7 @@ public class Client {
 
         // We can create stubs for all the DataNodes right away because
         // gRPC doesn't connect to the service until a procedure call is made
-        List<IDataNodeGrpc.IDataNodeBlockingStub> nodeList = blockResponse.getNodesList()
+        List<IDataNodeGrpc.IDataNodeBlockingStub> stubs = blockResponse.getNodesList()
                 .stream()
                 .map(node -> Utils.getDataNodeStub(node.getIp(), node.getPort()))
                 .collect(Collectors.toList());
@@ -90,7 +89,7 @@ public class Client {
             // Replicate the block on $replicationFactor nodes, or as many nodes
             // as possible if replication factor cannot be reached
             for(int nodeIndex = 0;
-                nodeIndex < nodeList.size() && replicationCount < replicationFactor;
+                nodeIndex < stubs.size() && replicationCount < replicationFactor;
                 nodeIndex++
             ) {
                 try {
@@ -99,7 +98,7 @@ public class Client {
                             blockIndex,
                             ByteString.copyFrom(curr, 0, numRead),
                             Operations.FileMode.WRITE,
-                            nodeList.get(nodeIndex)
+                            stubs.get(nodeIndex)
                     );
 
                     if(writeResponse.getStatus() != Operations.StatusCode.OK) {
@@ -126,6 +125,7 @@ public class Client {
         // Closing remote file is especially important because writing
         // acquires an exclusive lock on the file
         dataInputStream.close();
+        shutdownStubChannels(stubs);
         Operations.OpenCloseResponse closeResponse = doOpenClose(remoteFilename, Operations.FileMode.WRITE, false);
 
         if(closeResponse.getStatus() != Operations.StatusCode.OK) {
@@ -229,6 +229,7 @@ public class Client {
         // Closing remote file is especially important because failing to close it might
         // prevent other clients from being able to write to it (reader-writer locking)
         outputStream.close();
+        shutdownStubChannels(stubs.values());
         Operations.OpenCloseResponse closeResponse = doOpenClose(remoteFilename, Operations.FileMode.READ, false);
 
         if(closeResponse.getStatus() != Operations.StatusCode.OK) {
@@ -242,6 +243,13 @@ public class Client {
         for (String filename : response.getFilenamesList()) {
             System.out.println(filename);
         }
+    }
+
+    private void shutdownStubChannels(Collection<IDataNodeGrpc.IDataNodeBlockingStub> stubs) {
+        stubs.forEach(stub -> {
+            ManagedChannel channel = (ManagedChannel) stub.getChannel();
+            channel.shutdown();
+        });
     }
 
     private Operations.OpenCloseResponse doOpenClose(
