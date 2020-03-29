@@ -43,7 +43,7 @@ public class NameNodeService extends INameNodeGrpc.INameNodeImplBase {
 
     // Tracking file information, such what files are available,
     // whether they're being written to, and which nodes store chunks
-    private Map<String, FileStatus> fileStatuses;
+    private Map<String, FileInfo> fileStatuses;
     private Set<DataNodeBlockInfo> blockInfoList = new HashSet<>();
 
     public NameNodeService(String ipAddress, int portNumber, String name, int replicationFactor) {
@@ -70,29 +70,29 @@ public class NameNodeService extends INameNodeGrpc.INameNodeImplBase {
         synchronized (fileLock) {
             String filename = request.getFilename();
             Operations.FileMode requestedMode = request.getMode();
-            FileStatus fileStatus = fileStatuses.getOrDefault(filename, null);
+            FileInfo fileInfo = fileStatuses.getOrDefault(filename, null);
 
-            if (fileStatus == null) {
+            if (fileInfo == null) {
                 if(requestedMode == Operations.FileMode.READ) {
                     // If the file doesn't exist, it can't be opened
                     status = Operations.StatusCode.E_NOENT;
                 } else {
                     // We're writing to the file for the first time
-                    fileStatuses.put(filename, new FileStatus(requestedMode, 1));
+                    fileStatuses.put(filename, new FileInfo(requestedMode, 1));
                 }
-            } else if (fileStatus.openMode == Operations.FileMode.WRITE) {
+            } else if (fileInfo.openMode == Operations.FileMode.WRITE) {
                 // If ANYONE is writing to the file, no one can read
                 // or write to it
                 status = Operations.StatusCode.E_BUSY;
             } else if (requestedMode == Operations.FileMode.WRITE
-                    && fileStatus.openMode == Operations.FileMode.READ) {
+                    && fileInfo.openMode == Operations.FileMode.READ) {
                 // If people are reading the file but someone
                 // requests to write to it, that would cause reading
                 // corrupted/stale data
                 status = Operations.StatusCode.E_BUSY;
             } else {
-                fileStatus.openMode = requestedMode;
-                fileStatus.openHandles++;
+                fileInfo.openMode = requestedMode;
+                fileInfo.openHandles++;
             }
         }
 
@@ -108,9 +108,9 @@ public class NameNodeService extends INameNodeGrpc.INameNodeImplBase {
         synchronized (fileLock) {
             String filename = request.getFilename();
             Operations.FileMode requestedMode = request.getMode();
-            FileStatus fileStatus = fileStatuses.getOrDefault(filename, null);
+            FileInfo fileInfo = fileStatuses.getOrDefault(filename, null);
 
-            if (fileStatus == null || fileStatus.openMode != requestedMode) {
+            if (fileInfo == null || fileInfo.openMode != requestedMode) {
                 // Invalid argument to close non-existent file
                 // or close with incorrect mode
                 status = Operations.StatusCode.E_INVAL;
@@ -118,8 +118,8 @@ public class NameNodeService extends INameNodeGrpc.INameNodeImplBase {
                 // Decrement number of nodes accessing file.
                 // If it reaches 0, clear mode so that it doesn't
                 // seem like the file is being read/written to.
-                if (--fileStatus.openHandles == 0) {
-                    fileStatus.openMode = null;
+                if (--fileInfo.openHandles == 0) {
+                    fileInfo.openMode = null;
                 }
             }
         }
@@ -226,8 +226,8 @@ public class NameNodeService extends INameNodeGrpc.INameNodeImplBase {
                             // If we see a block number greater than the max known for a file,
                             // that means a Client was successfully able to write data for
                             // that block to the node.
-                            fileStatuses.putIfAbsent(fileBlock.getFilename(), new FileStatus(null, 0));
-                            FileStatus status = fileStatuses.get(fileBlock.getFilename());
+                            fileStatuses.putIfAbsent(fileBlock.getFilename(), new FileInfo(null, 0));
+                            FileInfo status = fileStatuses.get(fileBlock.getFilename());
                             status.maxBlockNumber = Long.max(status.maxBlockNumber, fileBlock.getFileBlock());
 
                             return new DataNodeBlockInfo(
@@ -290,8 +290,10 @@ public class NameNodeService extends INameNodeGrpc.INameNodeImplBase {
                 Files.createDirectories(Paths.get(path).getParent());
                 OutputStream stateStream = new FileOutputStream(path);
 
-                for (Map.Entry<String, FileStatus> entry : fileStatuses.entrySet()) {
-                    String line = entry.getKey() + "," + entry.getValue().maxBlockNumber + "\n";
+                for (Map.Entry<String, FileInfo> entry : fileStatuses.entrySet()) {
+                    String line = entry.getKey() + ","
+                                    + entry.getValue().maxBlockNumber + ","
+                                    + entry.getValue().fileCreationTime + "\n";
                     stateStream.write(line.getBytes());
                 }
 
@@ -302,14 +304,14 @@ public class NameNodeService extends INameNodeGrpc.INameNodeImplBase {
         }
     }
 
-    private Map<String, FileStatus> loadState(String path) {
+    private Map<String, FileInfo> loadState(String path) {
         try (Stream<String> stateStream = Files.lines(Paths.get(path))) {
             return stateStream
                     .filter(line -> line.contains(","))
                     .map(line -> line.split(","))
                     .collect(Collectors.toMap(
                             line -> line[0],  // key is filename, value is maxBlockNumber
-                            line -> new FileStatus(Integer.parseInt(line[1]))
+                            line -> new FileInfo(Integer.parseInt(line[1]), Long.parseLong(line[2]))
                     ));
         } catch (IOException e) {
             return new HashMap<>();
@@ -398,21 +400,24 @@ public class NameNodeService extends INameNodeGrpc.INameNodeImplBase {
         }
     }
 
-    public static class FileStatus {
+    public static class FileInfo {
         Operations.FileMode openMode;
+        long fileCreationTime;
         long maxBlockNumber;
         int openHandles;
 
-        FileStatus(long maxBlock) {
+        FileInfo(long maxBlock, long creationTime) {
             openMode = null;
             openHandles = 0;
             maxBlockNumber = maxBlock;
+            fileCreationTime = creationTime;
         }
 
-        FileStatus(Operations.FileMode mode, int handles) {
+        FileInfo(Operations.FileMode mode, int handles) {
             openMode = mode;
             openHandles = handles;
             maxBlockNumber = 0;
+            fileCreationTime = System.currentTimeMillis();
         }
     }
 }
