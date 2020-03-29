@@ -1,19 +1,24 @@
-CLASSPATH=".:build:libs/protobuf-java-3.11.4.jar"
+CLASSPATH=".:bin:libs/*"
+CONFIG="src/dn_config.txt"
 
 clean:
 	rm -rf bin/
 
+clear_blocks:
+	rm -rf data/node-*
+
 build: clean
-	javac -d build -g -sourcepath src -cp $(CLASSPATH) \
-		src/ds/hdfs/NameNode.java \
-		src/ds/hdfs/DataNode.java \
-		src/ds/hdfs/Client.java
+	javac -d bin -g -sourcepath src -cp $(CLASSPATH) \
+	    --release=10 --add-modules=java.xml.ws.annotation \
+	    src/ds/hdfs/NameNodeServer.java \
+	    src/ds/hdfs/DataNodeServer.java \
+	    src/ds/hdfs/Client.java
 
 run_name_node:
-	java -cp ${CLASSPATH} ds.hdfs.NameNode
+	java -cp ${CLASSPATH} ds.hdfs.NameNodeServer
 
 run_data_node:
-	java -cp ${CLASSPATH} ds.hdfs.DataNode ${CONFIG}
+	java -cp ${CLASSPATH} ds.hdfs.DataNodeServer ${CONFIG}
 
 run_client:
 	java -cp ${CLASSPATH} ds.hdfs.Client

@@ -1,299 +1,271 @@
 package ds.hdfs;
-import java.rmi.*;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.RemoteException;
-import java.util.*;
-import java.io.*;
 
 import com.google.protobuf.ByteString;
-import com.google.protobuf.InvalidProtocolBufferException;
-//import ds.hdfs.INameNode;
+import com.google.protobuf.Empty;
+import ds.hdfs.proto.IDataNodeGrpc;
+import ds.hdfs.proto.INameNodeGrpc;
+import ds.hdfs.proto.Operations;
+import io.grpc.ManagedChannel;
+import io.grpc.StatusRuntimeException;
 
-public class Client
-{
-    //Variables Required
-    public INameNode nameNode; //Name Node stub
-    public IDataNode dataNode; //Data Node stub
-    public int blockSize;
+import java.io.*;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
-    public Client() throws IOException, NotBoundException {
+public class Client {
+
+    private int blockSize;
+    private INameNodeGrpc.INameNodeBlockingStub nameNode;
+
+    private Client() throws IOException {
         Map<String, String> config = Utils.parseConfigFile("src/cn_config.txt");
         blockSize = Integer.parseInt(config.get("BLOCK_SIZE"));
-        nameNode = Utils.connectNameNode();
-        //Get the Name Node Stub
-        //nn_details contain NN details in the format Server;IP;Port
+        nameNode = Utils.getNameNodeStub();
     }
 
-    public void putFile(String localFilename, String remoteFilename) {
+    /**
+     * @param localFilename the file on client's filesystem to upload to HDFS
+     * @param remoteFilename the name with which the uploaded file should be saved
+     * @throws StatusRuntimeException if contacting the NameNode fails
+     * @throws IOException if performing I/O on {@param localFilename} fails
+     */
+    private void putFile(String localFilename, String remoteFilename) throws StatusRuntimeException, IOException {
         System.out.printf("Going to write local file (%s) to remote file (%s)\n",
                 localFilename, remoteFilename);
 
+        // Open the local file that needs to be read
+        InputStream input;
+        DataInputStream dataInputStream;
+
         try {
-            InputStream input;
-            DataInputStream dataInputStream;
-
-            try {
-                input = new FileInputStream(localFilename);
-                dataInputStream = new DataInputStream(input);
-            } catch (IOException e) {
-                System.err.println("Failed to open local file for reading");
-                return;
-            }
-
-            // Call NameNode for Open File Request
-            try {
-                Operations.OpenCloseResponse response = doOpenClose(remoteFilename, Operations.FileMode.WRITE, true);
-
-                if(response.getStatus() != Operations.StatusCode.OK) {
-                    System.err.println(getErrorMessage(response.getStatus()));
-                    dataInputStream.close();
-                    return;
-                }
-            } catch (IOException e) {
-                System.err.println("Failed to open remote file for writing");
-                dataInputStream.close();
-                return;
-            }
-
-            List<Operations.DataNode> nodeList = null;
-            int replicationFactor = -1;
-
-            try {
-                // Call NameNode for Assign Block Request
-                Operations.AssignBlockRequest blockRequest = Operations.AssignBlockRequest
-                        .newBuilder()
-                        .build();
-
-                Operations.AssignBlockResponse blockResponse = Operations.AssignBlockResponse
-                        .parseFrom(nameNode.assignBlock(blockRequest.toByteArray()));
-
-                if(blockResponse.getStatus() != Operations.StatusCode.OK) {
-                    System.err.println(getErrorMessage(blockResponse.getStatus()));
-                } else {
-                    nodeList = blockResponse.getNodesList();
-                    replicationFactor = blockResponse.getReplicationFactor();
-                }
-            } catch (RemoteException e) {
-                System.err.println("Failed assign blocks for file");
-            }
-
-            // Open file and put into input stream
-            try {
-                int blockIndex = 0; // block number
-
-                // We break out of the loop when we reach the end of the file.
-                // The while condition prevents us from putting the file
-                // if no nodes are active.
-                while (nodeList != null && replicationFactor != -1) {
-                    int replicationCount = 0;
-                    byte[] curr = new byte[blockSize];
-
-                    int numRead = dataInputStream.read(curr); // returns bytes read (len)
-                    if (numRead <= 0) break;
-
-                    for(int nodeIndex = 0;
-                        nodeIndex < nodeList.size() && replicationCount < replicationFactor;
-                        nodeIndex++
-                    ) {
-                        Operations.DataNode node = nodeList.get(nodeIndex);
-
-                        try {
-                            Operations.ReadWriteResponse writeResponse = doReadWrite(
-                                    remoteFilename,
-                                    blockIndex,
-                                    ByteString.copyFrom(curr, 0, numRead),
-                                    Operations.FileMode.WRITE,
-                                    connectDataNode(
-                                        node.getIp(),
-                                        node.getPort(),
-                                        "IDataNode-" + node.getId())
-                            );
-
-                            if(writeResponse.getStatus() != Operations.StatusCode.OK) {
-                                System.err.println(getErrorMessage(writeResponse.getStatus()));
-                            } else {
-                                replicationCount++;
-                            }
-                        } catch (NotBoundException e) {
-                            System.err.printf("Could not connect to DataNode %d, continuing anyways\n", node.getId());
-                        } catch (RemoteException e) {
-                            // ignore
-                        }
-                    }
-
-                    if (replicationCount < replicationFactor)
-                        System.err.printf("Failed to reach replication factor for block %d\n", blockIndex);
-
-                    blockIndex++;
-                }
-
-                dataInputStream.close();
-            } catch (IOException e) {
-                System.err.println("Failed to find or read file");
-            }
-
-            try {
-                Operations.OpenCloseResponse response = doOpenClose(remoteFilename, Operations.FileMode.WRITE, false);
-
-                if(response.getStatus() != Operations.StatusCode.OK) {
-                    System.err.println(getErrorMessage(response.getStatus()));
-                }
-            } catch (RemoteException e) {
-                System.err.println("Failed to close file");
-            }
-        } catch (InvalidProtocolBufferException e) {
-            System.err.println("Protobuf error");
+            input = new FileInputStream(localFilename);
+            dataInputStream = new DataInputStream(input);
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Failed to open local file for reading");
+            return;
+        }
+
+        // Ask permission to open the remote file for writing
+        Operations.OpenCloseResponse openResponse = doOpenClose(remoteFilename, Operations.FileMode.WRITE, true);
+
+        if(openResponse.getStatus() != Operations.StatusCode.OK) {
+            System.err.println(getErrorMessage(openResponse.getStatus()));
+            dataInputStream.close();
+            return;
+        }
+
+        // Ask the NameNode for available DataNodes we can write blocks to.
+        // NameNode shuffles the list of DataNodes to ensure some degree of load balancing
+        Operations.AssignBlockRequest blockRequest = Operations.AssignBlockRequest.getDefaultInstance();
+        Operations.AssignBlockResponse blockResponse = nameNode.assignBlock(blockRequest);
+
+        if(blockResponse.getStatus() != Operations.StatusCode.OK) {
+            System.err.println(getErrorMessage(blockResponse.getStatus()));
+            dataInputStream.close();
+            return;
+        }
+
+        int blockIndex = 0; // block number
+        int replicationFactor = blockResponse.getReplicationFactor();
+
+        // We can create stubs for all the DataNodes right away because
+        // gRPC doesn't connect to the service until a procedure call is made
+        List<IDataNodeGrpc.IDataNodeBlockingStub> stubs = blockResponse.getNodesList()
+                .stream()
+                .map(node -> Utils.getDataNodeStub(node.getIp(), node.getPort()))
+                .collect(Collectors.toList());
+
+        // We break out of the loop when we reach the end of the file.
+        while (true) {
+            // Read the current block from the file
+            int replicationCount = 0;
+            byte[] curr = new byte[blockSize];
+            int numRead = dataInputStream.read(curr); // returns bytes read (len)
+
+            // Bytes read is -1 if we reach EOF
+            if (numRead <= 0) break;
+
+            // Replicate the block on $replicationFactor nodes, or as many nodes
+            // as possible if replication factor cannot be reached
+            for(int nodeIndex = 0;
+                nodeIndex < stubs.size() && replicationCount < replicationFactor;
+                nodeIndex++
+            ) {
+                try {
+                    Operations.ReadWriteResponse writeResponse = doReadWrite(
+                            remoteFilename,
+                            blockIndex,
+                            ByteString.copyFrom(curr, 0, numRead),
+                            Operations.FileMode.WRITE,
+                            stubs.get(nodeIndex)
+                    );
+
+                    if(writeResponse.getStatus() != Operations.StatusCode.OK) {
+                        System.err.println(getErrorMessage(writeResponse.getStatus()));
+                    } else {
+                        replicationCount++;
+                    }
+                } catch (StatusRuntimeException e) {
+                    System.err.printf("Could not reach DataNode %d, continuing anyways (error = %s)\n",
+                            blockResponse.getNodesList().get(nodeIndex).getId(),
+                            e.getStatus().getCode());
+                }
+            }
+
+            // The project states to assume at least half of all DataNodes will be up
+            // at all times, so we do not handle the case where replicationCount = 0.
+            if (replicationCount < replicationFactor)
+                System.err.printf("Failed to reach replication factor for block %d\n", blockIndex);
+
+            blockIndex++;
+        }
+
+        // Close both the local and remote files
+        // Closing remote file is especially important because writing
+        // acquires an exclusive lock on the file
+        dataInputStream.close();
+        shutdownStubChannels(stubs);
+        Operations.OpenCloseResponse closeResponse = doOpenClose(remoteFilename, Operations.FileMode.WRITE, false);
+
+        if(closeResponse.getStatus() != Operations.StatusCode.OK) {
+            System.err.println(getErrorMessage(closeResponse.getStatus()));
         }
     }
 
-    public void getFile(String remoteFilename, String localFilename) {
+    /**
+     * @param remoteFilename the HDFS file to download
+     * @param localFilename the name with which the downloaded file is stored on local filesystem
+     * @throws StatusRuntimeException if contacting the NameNode fails
+     * @throws IOException if performing I/O on {@param localFilename} fails
+     */
+    private void getFile(String remoteFilename, String localFilename) throws StatusRuntimeException, IOException {
         System.out.printf("Going to read remote file (%s) to local file (%s)\n",
                 remoteFilename, localFilename);
 
+        // Open the local file to which we will write the contents of the remote file
+        File outputFile;
+        FileOutputStream outputStream;
+
         try {
-            File outputFile;
-            FileOutputStream outputStream;
-
-            try {
-                outputFile = new File(localFilename);
-                outputFile.createNewFile();
-                outputStream = new FileOutputStream(localFilename);
-            } catch (IOException e) {
-                System.err.println("Failed to open local file for writing");
-                return;
-            }
-
-            try {
-                Operations.OpenCloseResponse response = doOpenClose(remoteFilename, Operations.FileMode.READ, true);
-
-                if(response.getStatus() != Operations.StatusCode.OK) {
-                    System.err.println(getErrorMessage(response.getStatus()));
-                    outputStream.close();
-                    return;
-                }
-            } catch (RemoteException e) {
-                System.err.println("Failed to open remote file for reading");
-                outputStream.close();
-                return;
-            }
-
-            int blockNumber = 0;
-
-            while(true) {
-                byte[] contents = null;
-                Operations.GetBlockLocationsResponse locationsResponse;
-
-                try {
-                    byte[] locationsRequest = Operations.GetBlockLocationsRequest
-                            .newBuilder()
-                            .setFilename(remoteFilename)
-                            .setBlockNumber(blockNumber)
-                            .build()
-                            .toByteArray();
-
-                    locationsResponse = Operations.GetBlockLocationsResponse
-                            .parseFrom(nameNode.getBlockLocations(locationsRequest));
-
-                    // If we reach the end of the file, we get an E_NOBLK error
-                    if (locationsResponse.getStatus() == Operations.StatusCode.E_NOBLK) {
-                        break;
-                    } else if (locationsResponse.getStatus() != Operations.StatusCode.OK) {
-                        System.err.println(getErrorMessage(locationsResponse.getStatus()));
-                        outputFile.delete();
-                        break;
-                    }
-                } catch (RemoteException e) {
-                    System.err.println("Failed to query NameNode for block locations, aborting operation");
-                    outputFile.delete();
-                    break;
-                }
-
-                for(Operations.DataNode node : locationsResponse.getNodesList()) {
-                    try {
-                        Operations.ReadWriteResponse readResponse = doReadWrite(
-                                remoteFilename,
-                                blockNumber,
-                                null,
-                                Operations.FileMode.READ,
-                                connectDataNode(
-                                    node.getIp(),
-                                    node.getPort(),
-                                    "IDataNode-" + node.getId())
-                        );
-
-                        if(readResponse.getStatus() == Operations.StatusCode.OK) {
-                            contents = readResponse.getContents().toByteArray();
-                            break;  // only need to successfully read from one node
-                        }
-                    } catch (RemoteException | NotBoundException e) {
-                        // e.printStackTrace();
-                    }
-                }
-
-                if(contents == null) {
-                    System.err.printf("Failed to read block %d from any node, aborting operation\n", blockNumber);
-                    outputFile.delete();
-                    break;
-                }
-
-                outputStream.write(contents);
-                blockNumber++;
-            }
-
-            outputStream.close();
-
-            try {
-                Operations.OpenCloseResponse response = doOpenClose(remoteFilename, Operations.FileMode.READ, false);
-
-                if(response.getStatus() != Operations.StatusCode.OK) {
-                    System.err.println(getErrorMessage(response.getStatus()));
-                }
-            } catch (RemoteException e) {
-                System.err.println("Failed to close remote file for reading");
-            }
-        } catch (InvalidProtocolBufferException e) {
-            System.err.println("Protobuf error");
+            outputFile = new File(localFilename);
+            outputFile.createNewFile();
+            outputStream = new FileOutputStream(localFilename);
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Failed to open local file for writing");
+            return;
         }
-    }
 
-    public void list() {
-        try {
-            Operations.ListResponse response = Operations.ListResponse.parseFrom(nameNode.list());
-            for (String filename : response.getFilenamesList()) {
-                System.out.println(filename);
+        // Open remote file for reading; NameNode implementation allows
+        // for multiple concurrent readers (reader-writer mutual exclusion)
+        Operations.OpenCloseResponse openResponse = doOpenClose(remoteFilename, Operations.FileMode.READ, true);
+
+        if(openResponse.getStatus() != Operations.StatusCode.OK) {
+            System.err.println(getErrorMessage(openResponse.getStatus()));
+            outputStream.close();
+            return;
+        }
+
+        int blockNumber = 0;
+        Map<Integer, IDataNodeGrpc.IDataNodeBlockingStub> stubs = new HashMap<>();
+
+        while(true) {
+            byte[] contents = null;
+
+            // Figure out which DataNodes store the current block
+            Operations.GetBlockLocationsRequest locationsRequest = Operations.GetBlockLocationsRequest
+                    .newBuilder()
+                    .setFilename(remoteFilename)
+                    .setBlockNumber(blockNumber)
+                    .build();
+
+            Operations.GetBlockLocationsResponse locationsResponse = nameNode.getBlockLocations(locationsRequest);
+
+            // If we reach the end of the file, we get an E_NOBLK error, can break safely
+            if (locationsResponse.getStatus() == Operations.StatusCode.E_NOBLK) {
+                break;
+            } else if (locationsResponse.getStatus() != Operations.StatusCode.OK) {
+                System.err.println(getErrorMessage(locationsResponse.getStatus()));
+                outputFile.delete();
+                break;
             }
-        } catch (RemoteException e) {
-            System.err.println("Failed to access list of remote files");
-        } catch (InvalidProtocolBufferException e) {
-            e.printStackTrace();
+
+            // Try to read the block from any of the listed nodes
+            // (only one read needs to be successful as all nodes simply store replicas)
+            for(Operations.DataNode node : locationsResponse.getNodesList()) {
+                if(!stubs.containsKey(node.getId())) {
+                    stubs.put(node.getId(), Utils.getDataNodeStub(node.getIp(), node.getPort()));
+                }
+                
+                try {
+                    Operations.ReadWriteResponse readResponse = doReadWrite(
+                            remoteFilename,
+                            blockNumber,
+                            null,
+                            Operations.FileMode.READ,
+                            stubs.get(node.getId())
+                    );
+
+                    if(readResponse.getStatus() == Operations.StatusCode.OK) {
+                        contents = readResponse.getContents().toByteArray();
+                        break;  // only need to successfully read from one node
+                    }
+                } catch (StatusRuntimeException e) {
+                    // e.printStackTrace();
+                }
+            }
+
+            if(contents == null) {
+                System.err.printf("Failed to read block %d from any node, aborting operation\n", blockNumber);
+                outputFile.delete();
+                break;
+            }
+
+            outputStream.write(contents);
+            blockNumber++;
+        }
+
+        // Close both local and remote files
+        // Closing remote file is especially important because failing to close it might
+        // prevent other clients from being able to write to it (reader-writer locking)
+        outputStream.close();
+        shutdownStubChannels(stubs.values());
+        Operations.OpenCloseResponse closeResponse = doOpenClose(remoteFilename, Operations.FileMode.READ, false);
+
+        if(closeResponse.getStatus() != Operations.StatusCode.OK) {
+            System.err.println(getErrorMessage(closeResponse.getStatus()));
         }
     }
 
-    private static IDataNode connectDataNode(String ip, int port, String name) throws RemoteException, NotBoundException {
-        Registry serverRegistry = LocateRegistry.getRegistry(ip, port);
-        return (IDataNode) serverRegistry.lookup(name);
+    public void list() throws StatusRuntimeException {
+        Operations.ListResponse response = nameNode.list(Empty.getDefaultInstance());
+
+        for (String filename : response.getFilenamesList()) {
+            System.out.println(filename);
+        }
     }
 
-    private Operations.OpenCloseResponse doOpenClose(String filename, Operations.FileMode mode, boolean isOpen)
-            throws InvalidProtocolBufferException, RemoteException {
+    private void shutdownStubChannels(Collection<IDataNodeGrpc.IDataNodeBlockingStub> stubs) {
+        stubs.forEach(stub -> {
+            ManagedChannel channel = (ManagedChannel) stub.getChannel();
+            channel.shutdown();
+        });
+    }
 
-        byte[] request = Operations.OpenCloseRequest
+    private Operations.OpenCloseResponse doOpenClose(
+            String filename,
+            Operations.FileMode mode,
+            boolean isOpen
+    ) throws StatusRuntimeException {
+        Operations.OpenCloseRequest request = Operations.OpenCloseRequest
                 .newBuilder()
                 .setFilename(filename)
                 .setMode(mode)
-                .build()
-                .toByteArray();
+                .build();
 
-        byte[] response = (isOpen)
+        return (isOpen)
                 ? nameNode.openFile(request)
                 : nameNode.closeFile(request);
-
-        return Operations.OpenCloseResponse.parseFrom(response);
     }
 
     private Operations.ReadWriteResponse doReadWrite(
@@ -301,8 +273,8 @@ public class Client
             int blockNumber,
             ByteString contents,
             Operations.FileMode mode,
-            IDataNode node
-    ) throws InvalidProtocolBufferException, RemoteException {
+            IDataNodeGrpc.IDataNodeBlockingStub node
+    ) throws StatusRuntimeException {
         Operations.ReadWriteRequest.Builder requestBuilder = Operations.ReadWriteRequest
                 .newBuilder()
                 .setFilename(filename)
@@ -311,16 +283,13 @@ public class Client
         if(contents != null)
             requestBuilder.setContents(contents);
 
-        byte[] response = mode == Operations.FileMode.WRITE
-                ? node.writeBlock(requestBuilder.build().toByteArray())
-                : node.readBlock(requestBuilder.build().toByteArray());
-
-        return Operations.ReadWriteResponse.parseFrom(response);
+        return (mode == Operations.FileMode.WRITE)
+                ? node.writeBlock(requestBuilder.build())
+                : node.readBlock(requestBuilder.build());
     }
 
     /**
-     *
-     * E_NOENT = 3;    // File does not exist
+     *     E_NOENT = 3;    // File does not exist
      *     E_NOBLK = 4;    // Block does not exist
      *     E_EXIST = 5;    // File already exists
      *     E_IO    = 6;    // I/O Error
@@ -329,78 +298,81 @@ public class Client
      */
     private static String getErrorMessage(Operations.StatusCode code) {
         switch (code) {
-            case E_UNKWN: return "Unknown error";
-            case E_NOENT: return "File does not exist";
-            case E_NOBLK: return "End of file";
-            case E_EXIST: return "File already exists";
-            case E_IO:    return "Failed to perform I/O operation";
-            case E_INVAL: return "Invalid request parameters";
-            case E_BUSY:  return "File has already been opened by other clients with a different file mode";
+            case E_UNKWN: return "ERROR: Unknown error";
+            case E_NOENT: return "ERROR: File does not exist";
+            case E_NOBLK: return "ERROR: End of file";
+            case E_EXIST: return "ERROR: File already exists";
+            case E_IO:    return "ERROR: Failed to perform I/O operation on server";
+            case E_INVAL: return "ERROR: Invalid request parameters";
+            case E_BUSY:  return "ERROR: File has already been opened by another client for writing";
             default:      return "";
         }
     }
 
-    public static void main(String[] args) throws IOException, NotBoundException {
-        // To read config file and Connect to NameNode
-        //Intitalize the Client
-        Client client = new Client();
-        System.out.println("Welcome to HDFS!!");
+    public static void main(String[] args) {
+        Client client;
+
+        try {
+            client = new Client();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        System.out.println("Welcome to HDFS!");
         Scanner scanner = new Scanner(System.in);
 
-        while(true)
-        {
+        while (true) {
             //Scanner, prompt and then call the functions according to the command
             System.out.print("$> "); //Prompt
             String command = scanner.nextLine();
             String[] splitCommands = command.split(" ");
 
-            if(splitCommands[0].equals("help"))
-            {
-                System.out.println("The following are the Supported Commands");
-                System.out.println("1. put filename ## To put a file in HDFS");
-                System.out.println("2. get filename ## To get a file in HDFS"); System.out.println("2. list ## To get the list of files in HDFS");
-            }
-            else if(splitCommands[0].equals("put"))  // put Filename
-            {
-                //Put file into HDFS
-                String localFilename, remoteFilename;
+            if (splitCommands[0].equals("help")) {
+                System.out.println("The following are the supported commands (optional arguments in <>)");
+                System.out.println("1. put local_filename <hdfs_filename>  # To put a file in HDFS");
+                System.out.println("2. get hdfs_filename  <local_filename> # To get a file from HDFS");
+                System.out.println("3. list                                # To get the list of files in HDFS");
+                System.out.println("4. quit                                # To exit the client shell");
+            } else if (splitCommands[0].equals("put")) {
                 try {
-                    localFilename = splitCommands[1];
-                    remoteFilename = splitCommands.length > 2 ? splitCommands[2] : localFilename;
+                    String localFilename = splitCommands[1];
+                    String remoteFilename = splitCommands.length > 2 ? splitCommands[2] : localFilename;
 
-                    if(localFilename.endsWith("/") || remoteFilename.contains("/")) {
+                    if (localFilename.endsWith("/") || remoteFilename.contains("/")) {
                         System.err.println("Directory operations are not supported ('/' in filename)");
                         continue;
                     }
 
                     client.putFile(localFilename, remoteFilename);
-                } catch(ArrayIndexOutOfBoundsException e) {
+                } catch (StatusRuntimeException e) {
+                    System.err.printf("Failed to contact NameNode, error = %s \n", e.getStatus().getCode());
+                } catch (IOException e) {
+                    System.err.println("Local I/O exception occurred, please provide valid paths/filenames");
+                } catch (ArrayIndexOutOfBoundsException e) {
                     System.out.println("Please type 'help' for instructions");
                 }
-            }
-            else if(splitCommands[0].equals("get"))
-            {
-                //Get file from HDFS
-                String localFilename, remoteFilename;
+            } else if (splitCommands[0].equals("get")) {
                 try {
-                    remoteFilename = splitCommands[1];
-                    localFilename = splitCommands.length > 2 ? splitCommands[2] : remoteFilename;
+                    String remoteFilename = splitCommands[1];
+                    String localFilename = splitCommands.length > 2 ? splitCommands[2] : remoteFilename;
                     client.getFile(remoteFilename, localFilename);
-                } catch(ArrayIndexOutOfBoundsException e) {
+                } catch (StatusRuntimeException e) {
+                    System.err.printf("Failed to contact NameNode, error = %s \n", e.getStatus().getCode());
+                } catch (IOException e) {
+                    System.err.println("Local I/O exception occurred, please provide valid paths/filenames");
+                } catch (ArrayIndexOutOfBoundsException e) {
                     System.out.println("Please type 'help' for instructions");
                 }
-            }
-            else if(splitCommands[0].equals("list"))
-            {
-                //Get list of files in HDFS
-                client.list();
-            }
-            else if(splitCommands[0].equals("quit") || splitCommands[0].equals("exit"))
-            {
+            } else if (splitCommands[0].equals("list")) {
+                try {
+                    client.list();
+                } catch (StatusRuntimeException e) {
+                    System.err.printf("Failed to contact NameNode, error = %s \n", e.getStatus().getCode());
+                }
+            } else if (splitCommands[0].equals("quit") || splitCommands[0].equals("exit")) {
                 break;
-            }
-            else
-            {
+            } else {
                 System.out.println("Please type 'help' for instructions");
             }
         }
