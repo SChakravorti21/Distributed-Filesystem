@@ -138,14 +138,22 @@ Because of the above reasons, we opted to use a solution better suited for this 
 
 You can find the definitions for our gRPC services in `src/ds/hdfs/hdfs_services.proto`.
 
-### Synchronization
+### Thread Synchronization
 Since a distributed filesystem like this must naturally be multithreaded to support the operation of several DataNodes and potentially multiple Clients, synchronization is of utmost importance to avoid data corruption and transparent operation of the filesystem. Since critical, non-idempotent functionality is generally guarded through functionality exposed by the NameNode (opening/closing files, assigning blocks, sending heartbeats), a convenient solution to achieving synchronization is to simply implement synchronization at the NameNode level. By default, then, non-idempotent functionality, which is usually initiated by a request to the NameNode, is protected through mutual exclusion tactics. Specifically, the NameNode has two locks (`nodeLock` and `fileLock`) which are used to ensure exclusive access to information in RPC requests (node status and file/block data respectively).
 
 ### Heartbeats
 
-In order for the NameNode to know what DataNodes are available, DataNodes send the NameNode heartbeats at a regular interval of 250ms. In each heartbeat, the DataNode sends information that helps Clients connect to them (IP, port, etc). Additionally, heartbeats include the list of blocks stored on the DataNode (more granular than simply filenames). Since this data is sent in heartbeats, and we saw no impact on performance even with thousands of blocks on DataNodes, we have *opted out* of the `blockReport` interaction between NameNodes and DataNodes. 
+In order for the NameNode to know what DataNodes are available, DataNodes send the NameNode heartbeats at a regular interval of 250ms. In each heartbeat, the DataNode sends information that helps Clients connect to them (IP, port, etc). Additionally, heartbeats include the list of blocks stored on the DataNode (more granular than simply filenames). This list of blocks is derived directly from the files stored in the native filesystem, i.e. the DataNode does not cache (in memory) the list of blocks it's storing, and instead simply reads from its corresponding `data/` directory to find out what blocks it's storing. Since this data is sent in heartbeats, and we saw no impact on performance even with thousands of blocks on DataNodes, we have *opted out* of the `blockReport` interaction between NameNodes and DataNodes. 
 
 On the NameNode, much work is done to track active DataNodes and the file blocks they store. For one, the NameNode stores a list of `activeNodes` mapped by their IDs. At a regular interval of 1 second, the NameNode scans through the list of `activeNodes` and removes any node which it has not received a heartbeat from in the past 1 second. Furthermore, the NameNode aggregates block reports from all DataNodes' heartbeats into a singular flat list `blockInfoList`, where each entry stores a filename, block number, and DataNode information. This provides a convenient structure to query for `getBlockLocations` requests.
+
+#### Restarts
+
+Of course, it is important for a distributed filesystem (and any distributed system for that matter) to be fault tolerant. Both our DataNode and NameNode can restart and restore their previous state quite easily.
+
+The DataNode actually does not even have to "restore" any state upon restarts. Since it always reads directly from the native filesystem to find out what blocks it's storing, the DataNode can start sending heartbeats to the NameNode immediately. This indicates to the NameNode that the DataNode has become active again, and the NameNode can continue to get that specific DataNode involved in Client interactions.
+
+The NameNode, upon restarting, reads from `data/nn_state.txt` to find out what files were stored in the system prior to it going down (`nn_state.txt` also stores the total number of blocks and creation time for all files). As soon as the NameNode is back up, it will start receiving heartbeats from DataNodes (assuming only the NameNode went down and the DataNodes were still up). These heartbeats will indicate to the NameNode which DataNodes store which file blocks, and the NameNode can resume servicing Client requests.
 
 ### Reading/Writing Files
 For the main functionality of reading and writing files in our system, we've mostly followed the guidelines of the project description and FAQ with a few tweeks:
